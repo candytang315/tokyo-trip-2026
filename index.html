@@ -28,10 +28,16 @@
 body{
   margin:0;
   font-family:'Noto Sans TC','Zen Maru Gothic',sans-serif;
-  background:var(--bg);
+  background-color:#FBF6EC;
   background-image:
-    radial-gradient(circle, #ECE7D6 1px, transparent 1px);
-  background-size:18px 18px;
+    radial-gradient(ellipse 480px 420px at 12% 95%, rgba(242,182,198,0.45), transparent 70%),
+    radial-gradient(ellipse 420px 360px at 30% 75%, rgba(188,227,176,0.4), transparent 70%),
+    radial-gradient(ellipse 400px 360px at 18% 35%, rgba(159,211,232,0.4), transparent 70%),
+    radial-gradient(ellipse 460px 400px at 78% 15%, rgba(245,224,140,0.4), transparent 70%),
+    radial-gradient(ellipse 420px 400px at 92% 55%, rgba(242,182,198,0.4), transparent 70%),
+    radial-gradient(ellipse 380px 320px at 68% 85%, rgba(159,211,232,0.35), transparent 70%),
+    radial-gradient(ellipse 320px 280px at 55% 40%, rgba(188,227,176,0.35), transparent 70%);
+  background-attachment:fixed;
   color:var(--ink);
   min-height:100vh;
   padding-bottom:84px;
@@ -42,17 +48,9 @@ body{
 .topbar{
   padding:0 0 14px;
   position:sticky; top:0; z-index:30;
-  background:var(--bg);
-  background-image:radial-gradient(circle, #ECE7D6 1px, transparent 1px);
-  background-size:18px 18px;
+  background:transparent;
 }
-.sousou-strip{
-  height:46px; width:100%;
-  background-color:#F4E9D8;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='90' viewBox='0 0 160 90'%3E%3Cg fill='none' stroke='%233F6B8C' stroke-width='4' stroke-linecap='round'%3E%3Cpath d='M20 15 L8 5 M20 15 L32 4 M20 15 L20 28 M20 15 L33 22'/%3E%3Cpath d='M95 10 L84 1 M95 10 L106 0 M95 10 L94 23 M95 10 L107 17'/%3E%3Cpath d='M50 60 L39 51 M50 60 L61 50 M50 60 L50 73 M50 60 L63 67'/%3E%3Cpath d='M130 55 L119 46 M130 55 L141 45 M130 55 L129 68 M130 55 L142 62'/%3E%3C/g%3E%3Cg fill='%23D9824B'%3E%3Cellipse cx='65' cy='15' rx='9' ry='6' transform='rotate(-20 65 15)'/%3E%3Cellipse cx='130' cy='28' rx='10' ry='7' transform='rotate(15 130 28)'/%3E%3Cellipse cx='15' cy='55' rx='8' ry='6' transform='rotate(30 15 55)'/%3E%3Cellipse cx='95' cy='65' rx='9' ry='6' transform='rotate(-10 95 65)'/%3E%3Cellipse cx='150' cy='75' rx='7' ry='5' transform='rotate(20 150 75)'/%3E%3C/g%3E%3C/svg%3E");
-  background-size:160px 90px;
-  background-repeat:repeat;
-}
+.sousou-strip{display:none;}
 .topbar-row{display:flex; align-items:center; justify-content:space-between; padding:22px 18px 0;}
 .brand{display:flex; align-items:center; gap:10px;}
 .brand-icon{
@@ -100,10 +98,8 @@ body{
 }
 .date-chip.active{border-color:#3F6B8C; background:#FBF3E7;}
 .date-chip.active::before{
-  content:''; position:absolute; top:0; left:0; right:0; height:6px;
-  background-color:#F4E9D8;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='8' viewBox='0 0 32 8'%3E%3Cellipse cx='8' cy='4' rx='4' ry='2.4' fill='%23D9824B' transform='rotate(-15 8 4)'/%3E%3Cg fill='none' stroke='%233F6B8C' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M24 4 L21 1.5 M24 4 L27 1.5 M24 4 L24 7'/%3E%3C/g%3E%3C/svg%3E");
-  background-size:32px 8px;
+  content:''; position:absolute; top:0; left:0; right:0; height:4px;
+  background:#3F6B8C; opacity:0.5;
 }
 .date-chip:active{transform:scale(.95);}
 .date-chip .daynum{font-size:9px; color:var(--accent); font-weight:900; letter-spacing:.5px;}
@@ -251,10 +247,8 @@ body{
   position:relative; overflow:hidden;
 }
 .bottomnav-inner::before{
-  content:''; position:absolute; top:0; left:0; right:0; height:5px;
-  background-color:#F4E9D8;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='10' viewBox='0 0 40 10'%3E%3Cg fill='none' stroke='%233F6B8C' stroke-width='2.5' stroke-linecap='round'%3E%3Cpath d='M10 5 L6 2 M10 5 L14 2 M10 5 L10 9'/%3E%3C/g%3E%3Cellipse cx='28' cy='5' rx='5' ry='3' fill='%23D9824B' transform='rotate(-15 28 5)'/%3E%3C/svg%3E");
-  background-size:40px 10px;
+  content:''; position:absolute; top:0; left:0; right:0; height:3px;
+  background:#3F6B8C; opacity:0.5;
 }
 .nav-btn{
   flex:1; display:flex; flex-direction:column; align-items:center; gap:3px;
