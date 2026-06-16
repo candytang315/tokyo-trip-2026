@@ -455,7 +455,7 @@ const WEATHER = {
   '2026-08-09':{temp:31, low:26, desc:'晴時多雲', icon:'fa-cloud-sun', loc:'TOKYO / NARITA', rain:20, wind:'2級', sunrise:'04:54', advice:'返程日機場內冷氣較強，建議準備一件薄長袖方便穿脫。'},
 };
 
-const SCHEDULE = {
+const SCHEDULE_DEFAULT = {
   '2026-08-05':[
     {time:'05:00', cat:'transport', title:'從家出發', sub:'固定車前往桃園機場，車程約40分鐘', note:''},
     {time:'08:30', cat:'transport', title:'JX800 桃園起飛', sub:'星宇航空 · 直飛3小時25分', note:''},
@@ -566,6 +566,7 @@ let state = {
   packs: JSON.parse(localStorage.getItem('tokyo_packs')||'null') || PACK_DEFAULT,
   expenses: JSON.parse(localStorage.getItem('tokyo_expenses')||'null') || EXPENSE_DEFAULT,
   rate: parseFloat(localStorage.getItem('tokyo_rate')) || JPY_TO_TWD,
+  schedule: JSON.parse(localStorage.getItem('tokyo_schedule')||'null') || JSON.parse(JSON.stringify(SCHEDULE_DEFAULT)),
 };
 
 function saveState(){
@@ -573,6 +574,7 @@ function saveState(){
   localStorage.setItem('tokyo_packs', JSON.stringify(state.packs));
   localStorage.setItem('tokyo_expenses', JSON.stringify(state.expenses));
   localStorage.setItem('tokyo_rate', state.rate);
+  localStorage.setItem('tokyo_schedule', JSON.stringify(state.schedule));
 }
 
 /* ============ RENDER: countdown ============ */
@@ -651,7 +653,7 @@ const CAT_LABEL = {food:'美食', spot:'景點', transport:'交通', stay:'住�
 const CAT_ICON = {food:'fa-utensils', spot:'fa-map-pin', transport:'fa-train-subway', stay:'fa-bed'};
 
 function renderTimeline(){
-  const items = SCHEDULE[state.selectedDate] || [];
+  const items = state.schedule[state.selectedDate] || [];
   const el = document.getElementById('timeline');
   if(items.length===0){
     el.innerHTML = `<div class="empty-state"><i class="fa-solid fa-mug-hot"></i><p>這天還沒有安排行程</p></div>`;
@@ -675,19 +677,96 @@ function renderTimeline(){
 
   el.querySelectorAll('.tl-item').forEach(item=>{
     item.addEventListener('click', ()=>{
-      const it = items[item.dataset.idx];
+      const idx = item.dataset.idx;
+      const it = items[idx];
       openModal(`
         <span class="tl-cat cat-${it.cat}" style="margin-bottom:12px;"><i class="fa-solid ${CAT_ICON[it.cat]}"></i> ${CAT_LABEL[it.cat]}</span>
         <h2 style="margin:6px 0 4px; font-size:19px;">${it.title}</h2>
         <p style="color:var(--ink-soft); font-size:13px; margin:0 0 14px;">${it.time} ・ ${state.selectedDate}</p>
         <p style="font-size:13.5px; line-height:1.7;">${it.sub}</p>
         ${it.note?`<div class="tl-note" style="margin-top:14px;"><i class="fa-solid fa-pen" style="margin-top:2px;"></i><span>${it.note}</span></div>`:''}
-        <button class="btn-primary" style="margin-top:18px;" onclick="window.open('https://www.google.com/maps/search/${encodeURIComponent(it.title)}','_blank')">
-          <i class="fa-solid fa-location-dot"></i> 開啟地圖
-        </button>
+        <div style="display:flex; gap:8px; margin-top:18px;">
+          <button class="btn-primary" style="background:var(--blue);" onclick="window.open('https://www.google.com/maps/search/${encodeURIComponent(it.title)}','_blank')">
+            <i class="fa-solid fa-location-dot"></i> 開啟地圖
+          </button>
+          <button class="btn-primary" onclick="openEditScheduleModal('${state.selectedDate}', ${idx})">
+            <i class="fa-solid fa-pen"></i> 編輯
+          </button>
+        </div>
       `);
     });
   });
+}
+
+function openEditScheduleModal(date, idx){
+  const it = state.schedule[date][idx];
+  const catOptions = Object.keys(CAT_LABEL).map(k=>`<option value="${k}" ${k===it.cat?'selected':''}>${CAT_LABEL[k]}</option>`).join('');
+  openModal(`
+    <h2 style="margin:6px 0 14px; font-size:17px;">編輯行程</h2>
+    <label>時間</label>
+    <input type="text" id="editTime" value="${it.time}">
+    <label>類別</label>
+    <select id="editCat">${catOptions}</select>
+    <label>標題</label>
+    <input type="text" id="editTitle" value="${it.title}">
+    <label>說明</label>
+    <textarea id="editSub" rows="2">${it.sub}</textarea>
+    <label>備註（選填）</label>
+    <textarea id="editNote" rows="2">${it.note||''}</textarea>
+    <button class="btn-primary" id="editSubmit">儲存</button>
+    <button class="btn-primary" id="editDelete" style="background:#D9A0A0; margin-top:8px;">刪除這個行程</button>
+  `);
+  document.getElementById('editSubmit').onclick = ()=>{
+    state.schedule[date][idx] = {
+      time: document.getElementById('editTime').value.trim(),
+      cat: document.getElementById('editCat').value,
+      title: document.getElementById('editTitle').value.trim(),
+      sub: document.getElementById('editSub').value.trim(),
+      note: document.getElementById('editNote').value.trim(),
+    };
+    saveState();
+    renderTimeline();
+    closeModal();
+  };
+  document.getElementById('editDelete').onclick = ()=>{
+    state.schedule[date].splice(idx,1);
+    saveState();
+    renderTimeline();
+    closeModal();
+  };
+}
+
+function openAddScheduleModal(){
+  const catOptions = Object.keys(CAT_LABEL).map(k=>`<option value="${k}">${CAT_LABEL[k]}</option>`).join('');
+  openModal(`
+    <h2 style="margin:6px 0 14px; font-size:17px;">新增行程（${state.selectedDate}）</h2>
+    <label>時間</label>
+    <input type="text" id="newTime" placeholder="例如：14:00">
+    <label>類別</label>
+    <select id="newCat">${catOptions}</select>
+    <label>標題</label>
+    <input type="text" id="newTitle" placeholder="例如：淺草寺參拜">
+    <label>說明</label>
+    <textarea id="newSub" rows="2" placeholder="補充說明"></textarea>
+    <label>備註（選填）</label>
+    <textarea id="newNote" rows="2" placeholder="提醒事項"></textarea>
+    <button class="btn-primary" id="newScheduleSubmit">新增</button>
+  `);
+  document.getElementById('newScheduleSubmit').onclick = ()=>{
+    const title = document.getElementById('newTitle').value.trim();
+    if(!title) return;
+    if(!state.schedule[state.selectedDate]) state.schedule[state.selectedDate] = [];
+    state.schedule[state.selectedDate].push({
+      time: document.getElementById('newTime').value.trim(),
+      cat: document.getElementById('newCat').value,
+      title: title,
+      sub: document.getElementById('newSub').value.trim(),
+      note: document.getElementById('newNote').value.trim(),
+    });
+    saveState();
+    renderTimeline();
+    closeModal();
+  };
 }
 
 /* ============ RENDER: bookings ============ */
@@ -930,6 +1009,11 @@ document.getElementById('modalBg').onclick = (e)=>{ if(e.target.id==='modalBg') 
 document.getElementById('addFab').onclick = ()=>{
   const currentView = document.querySelector('.view.active').id;
 
+  if(currentView === 'view-schedule'){
+    openAddScheduleModal();
+    return;
+  }
+
   if(currentView === 'view-expense'){
     openAddExpenseModal();
     return;
@@ -937,8 +1021,7 @@ document.getElementById('addFab').onclick = ()=>{
 
   if(currentView !== 'view-todo'){
     openModal(`
-      <h2 style="margin:6px 0 14px; font-size:17px;">切換到「待辦」或「記帳」分頁即可新增項目</h2>
-      <button class="btn-primary" onclick="document.querySelector('[data-view=todo]').click(); closeModal();">前往待辦</button>
+      <h2 style="margin:6px 0 14px; font-size:17px;">切換到「行程」「待辦」或「記帳」分頁即可新增項目</h2>
     `);
     return;
   }
