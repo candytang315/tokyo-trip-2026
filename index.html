@@ -245,6 +245,48 @@ body{
 .empty-state i{font-size:30px; margin-bottom:10px; opacity:.4;}
 .empty-state p{font-size:12.5px;}
 
+/* Hotel photo */
+.bk-photo{
+  width:100%; height:140px; border-radius:14px; object-fit:cover;
+  margin-bottom:12px; background:var(--bg);
+}
+
+/* Expense dashboard */
+.expense-dashboard{
+  background:linear-gradient(135deg, var(--accent), #B85A40); color:#fff;
+  border-radius:20px; padding:20px 18px; margin-bottom:18px; box-shadow:var(--shadow);
+}
+.expense-total-lbl{font-size:11px; opacity:.8;}
+.expense-total-num{font-size:30px; font-weight:900; margin:4px 0 2px;}
+.expense-total-sub{font-size:11px; opacity:.75;}
+.expense-cats{display:flex; gap:8px; margin-top:14px; overflow-x:auto;}
+.expense-cat-chip{
+  background:rgba(255,255,255,.18); border-radius:12px; padding:7px 11px;
+  font-size:11px; white-space:nowrap; flex:0 0 auto;
+}
+.expense-cat-chip b{display:block; font-size:13px; margin-top:1px;}
+
+/* Expense item */
+.exp-item{
+  background:var(--card); border-radius:16px; padding:12px 14px; margin-bottom:10px;
+  box-shadow:var(--shadow); display:flex; align-items:center; gap:12px;
+}
+.exp-icon{
+  width:38px; height:38px; border-radius:12px; flex:0 0 38px;
+  display:flex; align-items:center; justify-content:center; font-size:15px;
+}
+.exp-mid{flex:1; min-width:0;}
+.exp-title{font-size:13.5px; font-weight:700;}
+.exp-sub{font-size:10.5px; color:var(--ink-soft); margin-top:1px;}
+.exp-amt{text-align:right; flex:0 0 auto;}
+.exp-amt-jpy{font-size:14px; font-weight:900;}
+.exp-amt-twd{font-size:10px; color:var(--ink-soft);}
+.exp-del{color:#D9A0A0; font-size:13px; padding:4px;}
+
+.date-divider{font-size:11px; color:var(--ink-soft); font-weight:700; margin:14px 2px 8px; display:flex; align-items:center; gap:8px;}
+.date-divider::after{content:''; flex:1; height:1px; background:var(--line);}
+
+
 .add-fab{
   position:fixed; right:18px; bottom:92px; z-index:35;
   width:52px; height:52px; border-radius:50%; background:var(--accent); color:#fff;
@@ -318,6 +360,13 @@ label{font-size:11px; font-weight:700; color:var(--ink-soft); margin-bottom:4px;
     <div id="packList"></div>
   </div>
 
+  <!-- ===== VIEW: 記帳 ===== -->
+  <div class="view" id="view-expense">
+    <div class="expense-dashboard" id="expenseDashboard"></div>
+    <div class="sec-title"><i class="fa-solid fa-receipt"></i> 支出明細</div>
+    <div id="expenseList"></div>
+  </div>
+
 </div>
 
 <button class="add-fab" id="addFab"><i class="fa-solid fa-plus"></i></button>
@@ -333,6 +382,9 @@ label{font-size:11px; font-weight:700; color:var(--ink-soft); margin-bottom:4px;
     </div>
     <div class="nav-btn" data-view="todo">
       <i class="fa-solid fa-list-check"></i><span>待辦</span>
+    </div>
+    <div class="nav-btn" data-view="expense">
+      <i class="fa-solid fa-wallet"></i><span>記帳</span>
     </div>
   </div>
 </div>
@@ -424,8 +476,8 @@ const FLIGHTS = [
 ];
 
 const HOTELS = [
-  {name:'KOKO Hotel Premier 東京灣幕張', icon:'fa-hotel', color:'gold', nights:'08.05 – 08.06 (1晚)', checkin:'15:00', checkout:'11:00', addr:'千葉縣千葉市美浜區ひび野2-7-1', price:'NT$4,650 / 晚（含早餐）'},
-  {name:'EN The House Asakusa Nitenmon', icon:'fa-house', color:'green', nights:'08.06 – 08.09 (3晚)', checkin:'15:00', checkout:'11:00', addr:'淺草寺二天門旁', price:'NT$4,929 / 晚'},
+  {name:'KOKO Hotel Premier 東京灣幕張', icon:'fa-hotel', color:'gold', nights:'08.05 – 08.06 (1晚)', checkin:'15:00', checkout:'11:00', addr:'千葉縣千葉市美浜區ひび野2-7-1', price:'NT$4,650 / 晚（含早餐）', photo:'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&q=80'},
+  {name:'EN The House Asakusa Nitenmon', icon:'fa-house', color:'green', nights:'08.06 – 08.09 (3晚)', checkin:'15:00', checkout:'11:00', addr:'淺草寺二天門旁', price:'NT$4,929 / 晚', photo:'https://images.unsplash.com/photo-1540518614846-7a0ac7366bce?w=800&q=80'},
 ];
 
 const TICKETS = [
@@ -455,16 +507,33 @@ const PACK_DEFAULT = [
   {text:'常備藥品', due:'', done:false},
 ];
 
+const EXP_CATS = {
+  food:{label:'餐飲', icon:'fa-utensils', color:'accent'},
+  transport:{label:'交通', icon:'fa-train-subway', color:'blue'},
+  shopping:{label:'購物', icon:'fa-bag-shopping', color:'green'},
+  ticket:{label:'門票', icon:'fa-ticket', color:'gold'},
+  stay:{label:'住宿', icon:'fa-bed', color:'gold'},
+  other:{label:'其他', icon:'fa-circle-dot', color:'blue'},
+};
+
+const JPY_TO_TWD = 0.22; // 估算匯率，可在頁面調整
+
+const EXPENSE_DEFAULT = [];
+
 /* ============ STATE ============ */
 let state = {
   selectedDate: TRIP_DATES[0].date,
   todos: JSON.parse(localStorage.getItem('tokyo_todos')||'null') || TODOS_DEFAULT,
   packs: JSON.parse(localStorage.getItem('tokyo_packs')||'null') || PACK_DEFAULT,
+  expenses: JSON.parse(localStorage.getItem('tokyo_expenses')||'null') || EXPENSE_DEFAULT,
+  rate: parseFloat(localStorage.getItem('tokyo_rate')) || JPY_TO_TWD,
 };
 
 function saveState(){
   localStorage.setItem('tokyo_todos', JSON.stringify(state.todos));
   localStorage.setItem('tokyo_packs', JSON.stringify(state.packs));
+  localStorage.setItem('tokyo_expenses', JSON.stringify(state.expenses));
+  localStorage.setItem('tokyo_rate', state.rate);
 }
 
 /* ============ RENDER: countdown ============ */
@@ -594,6 +663,7 @@ const COLOR_SOFT_MAP = {gold:'var(--gold-soft)', green:'var(--green-soft)', blue
 function renderHotels(){
   document.getElementById('hotelList').innerHTML = HOTELS.map(h=>`
     <div class="booking-card">
+      ${h.photo?`<img class="bk-photo" src="${h.photo}" alt="${h.name}" onerror="this.style.display='none'">`:''}
       <div class="bk-head">
         <div class="bk-icon" style="background:${COLOR_SOFT_MAP[h.color]}; color:${COLOR_MAP[h.color]};">
           <i class="fa-solid ${h.icon}"></i>
@@ -667,6 +737,119 @@ function bindCheck(){
   });
 }
 
+/* ============ RENDER: expense ============ */
+function renderExpenseDashboard(){
+  const totalJpy = state.expenses.reduce((s,e)=>s+Number(e.amount),0);
+  const totalTwd = Math.round(totalJpy * state.rate);
+
+  const byCat = {};
+  state.expenses.forEach(e=>{ byCat[e.cat] = (byCat[e.cat]||0) + Number(e.amount); });
+  const catChips = Object.keys(byCat).map(c=>{
+    const info = EXP_CATS[c] || EXP_CATS.other;
+    return `<div class="expense-cat-chip">${info.label}<b>¥${byCat[c].toLocaleString()}</b></div>`;
+  }).join('');
+
+  document.getElementById('expenseDashboard').innerHTML = `
+    <div class="expense-total-lbl">總支出（日幣）</div>
+    <div class="expense-total-num">¥${totalJpy.toLocaleString()}</div>
+    <div class="expense-total-sub">約 NT$${totalTwd.toLocaleString()} ・ 匯率
+      <span id="rateDisplay" style="text-decoration:underline; cursor:pointer;">${state.rate}</span>
+    </div>
+    ${catChips ? `<div class="expense-cats">${catChips}</div>` : ''}
+  `;
+
+  document.getElementById('rateDisplay').onclick = ()=>{
+    openModal(`
+      <h2 style="margin:6px 0 14px; font-size:17px;">調整日幣→台幣匯率</h2>
+      <label>1日幣 = ? 台幣</label>
+      <input type="number" step="0.001" id="rateInput" value="${state.rate}">
+      <button class="btn-primary" id="rateSubmit">儲存</button>
+    `);
+    document.getElementById('rateSubmit').onclick = ()=>{
+      const v = parseFloat(document.getElementById('rateInput').value);
+      if(v>0){ state.rate = v; saveState(); renderExpenseDashboard(); closeModal(); }
+    };
+  };
+}
+
+function renderExpenseList(){
+  const el = document.getElementById('expenseList');
+  if(state.expenses.length===0){
+    el.innerHTML = `<div class="empty-state"><i class="fa-solid fa-receipt"></i><p>還沒有記帳紀錄，點右下角＋新增</p></div>`;
+    return;
+  }
+  // group by date, newest first
+  const sorted = [...state.expenses].sort((a,b)=> (b.date+b.id) > (a.date+a.id) ? 1 : -1);
+  let lastDate = null;
+  let html = '';
+  sorted.forEach(e=>{
+    const info = EXP_CATS[e.cat] || EXP_CATS.other;
+    if(e.date !== lastDate){
+      html += `<div class="date-divider">${e.date}</div>`;
+      lastDate = e.date;
+    }
+    html += `
+      <div class="exp-item" data-id="${e.id}">
+        <div class="exp-icon" style="background:${COLOR_SOFT_MAP[info.color]}; color:${COLOR_MAP[info.color]};">
+          <i class="fa-solid ${info.icon}"></i>
+        </div>
+        <div class="exp-mid">
+          <div class="exp-title">${info.label}${e.note?' · '+e.note:''}</div>
+          <div class="exp-sub">${e.date}</div>
+        </div>
+        <div class="exp-amt">
+          <div class="exp-amt-jpy">¥${Number(e.amount).toLocaleString()}</div>
+          <div class="exp-amt-twd">≈NT$${Math.round(e.amount*state.rate).toLocaleString()}</div>
+        </div>
+        <div class="exp-del" data-id="${e.id}"><i class="fa-solid fa-trash"></i></div>
+      </div>
+    `;
+  });
+  el.innerHTML = html;
+
+  el.querySelectorAll('.exp-del').forEach(btn=>{
+    btn.onclick = (ev)=>{
+      ev.stopPropagation();
+      state.expenses = state.expenses.filter(e=>e.id !== btn.dataset.id);
+      saveState();
+      renderExpenseDashboard();
+      renderExpenseList();
+    };
+  });
+}
+
+function openAddExpenseModal(){
+  const catOptions = Object.keys(EXP_CATS).map(k=>`<option value="${k}">${EXP_CATS[k].label}</option>`).join('');
+  const dateOptions = TRIP_DATES.map(d=>`<option value="${d.date}">${d.date} (${d.dow})</option>`).join('');
+  openModal(`
+    <h2 style="margin:6px 0 14px; font-size:17px;">新增支出</h2>
+    <label>日期</label>
+    <select id="expDate">${dateOptions}</select>
+    <label>類別</label>
+    <select id="expCat">${catOptions}</select>
+    <label>金額（日幣）</label>
+    <input type="number" inputmode="numeric" id="expAmount" placeholder="例如：3500">
+    <label>備註（選填）</label>
+    <input type="text" id="expNote" placeholder="例如：鶯谷園燒肉">
+    <button class="btn-primary" id="expSubmit">新增記錄</button>
+  `);
+  document.getElementById('expSubmit').onclick = ()=>{
+    const amount = parseFloat(document.getElementById('expAmount').value);
+    if(!amount || amount<=0) return;
+    state.expenses.push({
+      id: Date.now().toString(),
+      date: document.getElementById('expDate').value,
+      cat: document.getElementById('expCat').value,
+      amount: amount,
+      note: document.getElementById('expNote').value.trim(),
+    });
+    saveState();
+    renderExpenseDashboard();
+    renderExpenseList();
+    closeModal();
+  };
+}
+
 /* ============ Modal ============ */
 function openModal(html){
   document.getElementById('modalContent').innerHTML = html;
@@ -678,12 +861,18 @@ function closeModal(){
 document.getElementById('modalClose').onclick = closeModal;
 document.getElementById('modalBg').onclick = (e)=>{ if(e.target.id==='modalBg') closeModal(); };
 
-/* ============ FAB (add new todo) ============ */
+/* ============ FAB (add new todo / expense) ============ */
 document.getElementById('addFab').onclick = ()=>{
   const currentView = document.querySelector('.view.active').id;
+
+  if(currentView === 'view-expense'){
+    openAddExpenseModal();
+    return;
+  }
+
   if(currentView !== 'view-todo'){
     openModal(`
-      <h2 style="margin:6px 0 14px; font-size:17px;">切換到「待辦」分頁即可新增項目</h2>
+      <h2 style="margin:6px 0 14px; font-size:17px;">切換到「待辦」或「記帳」分頁即可新增項目</h2>
       <button class="btn-primary" onclick="document.querySelector('[data-view=todo]').click(); closeModal();">前往待辦</button>
     `);
     return;
@@ -728,6 +917,8 @@ renderHotels();
 renderTickets();
 renderTodos();
 renderPacks();
+renderExpenseDashboard();
+renderExpenseList();
 </script>
 </body>
 </html>
