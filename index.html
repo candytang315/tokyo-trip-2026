@@ -94,16 +94,35 @@ body{
 
 /* Weather card */
 .weather-card{
-  background:var(--card); border-radius:20px; padding:14px 16px;
-  box-shadow:var(--shadow); display:flex; align-items:center;
-  justify-content:space-between; margin-bottom:16px;
+  background:linear-gradient(135deg,#EDE7D3,#F7F4EB); border-radius:22px; padding:18px 18px 16px;
+  box-shadow:var(--shadow); margin-bottom:16px;
 }
-.weather-left{display:flex; align-items:center; gap:12px;}
-.weather-icon{font-size:28px; color:var(--gold);}
-.weather-temp{font-size:20px; font-weight:900;}
-.weather-desc{font-size:11px; color:var(--ink-soft); margin-top:2px;}
-.weather-loc{font-size:11px; color:var(--ink-soft); text-align:right;}
-.weather-loc b{display:block; font-size:13px; color:var(--ink); font-weight:700;}
+.weather-top{display:flex; align-items:flex-start; justify-content:space-between;}
+.weather-loc-tag{
+  display:flex; align-items:center; gap:5px; font-size:10.5px; color:var(--ink-soft);
+  font-weight:700; letter-spacing:.5px;
+}
+.weather-desc-row{display:flex; align-items:center; gap:8px; margin-top:8px;}
+.weather-desc-main{font-size:19px; font-weight:900;}
+.weather-icon{font-size:24px; color:var(--gold);}
+.weather-temp-big{font-size:32px; font-weight:900; color:var(--ink); line-height:1;}
+.weather-temp-range{font-size:11px; color:var(--ink-soft); margin-top:3px;}
+.weather-stats{display:flex; gap:8px; margin-top:14px;}
+.weather-stat{
+  flex:1; background:rgba(255,255,255,.65); border-radius:14px; padding:10px 6px;
+  text-align:center;
+}
+.weather-stat i{font-size:14px; color:var(--blue); margin-bottom:4px; display:block;}
+.weather-stat .val{font-size:13px; font-weight:900;}
+.weather-stat .lbl{font-size:9px; color:var(--ink-soft); margin-top:1px;}
+.weather-advice{
+  margin-top:12px; background:rgba(255,255,255,.7); border-radius:14px; padding:10px 12px;
+  display:flex; gap:8px; align-items:flex-start;
+}
+.weather-advice i{color:var(--accent); font-size:13px; margin-top:2px;}
+.weather-advice-text{font-size:11.5px; line-height:1.6;}
+.weather-advice-text b{display:block; font-size:10px; color:var(--accent); margin-bottom:2px; letter-spacing:.5px;}
+
 
 /* Timeline */
 .timeline{position:relative; padding-left:6px;}
@@ -409,11 +428,11 @@ const TRIP_DATES = [
 ];
 
 const WEATHER = {
-  '2026-08-05':{temp:33, desc:'晴朗炎熱', icon:'fa-sun', loc:'千葉'},
-  '2026-08-06':{temp:32, desc:'多雲偶晴', icon:'fa-cloud-sun', loc:'千葉 / 東京'},
-  '2026-08-07':{temp:31, desc:'晴時多雲', icon:'fa-cloud-sun', loc:'東京'},
-  '2026-08-08':{temp:32, desc:'晴朗炎熱', icon:'fa-sun', loc:'東京'},
-  '2026-08-09':{temp:31, desc:'晴時多雲', icon:'fa-cloud-sun', loc:'東京 / 成田'},
+  '2026-08-05':{temp:33, low:27, desc:'晴朗炎熱', icon:'fa-sun', loc:'CHIBA CITY', rain:10, wind:'2級', sunrise:'04:50', advice:'抵達首日天氣晴朗炎熱，建議洋蔥式穿搭，室外活動務必補水防曬。'},
+  '2026-08-06':{temp:32, low:26, desc:'多雲偶晴', icon:'fa-cloud-sun', loc:'CHIBA / TOKYO', rain:20, wind:'2級', sunrise:'04:51', advice:'比賽日早晚溫差大，建議透氣排汗衣物，比賽後備一件薄外套保暖。'},
+  '2026-08-07':{temp:31, low:26, desc:'晴時多雲', icon:'fa-cloud-sun', loc:'TOKYO', rain:15, wind:'1級', sunrise:'04:52', advice:'戶外行程較多，建議輕便涼鞋與遮陽帽，午後紫外線強烈。'},
+  '2026-08-08':{temp:32, low:27, desc:'晴朗炎熱', icon:'fa-sun', loc:'TOKYO', rain:5, wind:'2級', sunrise:'04:53', advice:'整天高溫炎熱，建議淺色透氣衣物，隨身攜帶水分與消暑用品。'},
+  '2026-08-09':{temp:31, low:26, desc:'晴時多雲', icon:'fa-cloud-sun', loc:'TOKYO / NARITA', rain:20, wind:'2級', sunrise:'04:54', advice:'返程日機場內冷氣較強，建議準備一件薄長袖方便穿脫。'},
 };
 
 const SCHEDULE = {
@@ -570,14 +589,40 @@ function renderWeather(){
   const el = document.getElementById('weatherCard');
   if(!w){ el.innerHTML=''; return; }
   el.innerHTML = `
-    <div class="weather-left">
-      <i class="fa-solid ${w.icon} weather-icon"></i>
+    <div class="weather-top">
       <div>
-        <div class="weather-temp">${w.temp}°C</div>
-        <div class="weather-desc">${w.desc}</div>
+        <div class="weather-loc-tag"><i class="fa-solid fa-location-dot"></i> ${w.loc}</div>
+        <div class="weather-desc-row">
+          <i class="fa-solid ${w.icon} weather-icon"></i>
+          <span class="weather-desc-main">${w.desc}</span>
+        </div>
+      </div>
+      <div style="text-align:right;">
+        <div class="weather-temp-big">${w.temp}°</div>
+        <div class="weather-temp-range">${w.low}° / ${w.temp}°</div>
       </div>
     </div>
-    <div class="weather-loc"><b>${w.loc}</b>預估天氣</div>
+    <div class="weather-stats">
+      <div class="weather-stat">
+        <i class="fa-solid fa-droplet"></i>
+        <div class="val">${w.rain}%</div>
+        <div class="lbl">降雨機率</div>
+      </div>
+      <div class="weather-stat">
+        <i class="fa-solid fa-wind"></i>
+        <div class="val">${w.wind}</div>
+        <div class="lbl">風力</div>
+      </div>
+      <div class="weather-stat">
+        <i class="fa-solid fa-sun"></i>
+        <div class="val">${w.sunrise}</div>
+        <div class="lbl">日出</div>
+      </div>
+    </div>
+    <div class="weather-advice">
+      <i class="fa-solid fa-shirt"></i>
+      <div class="weather-advice-text"><b>OUTFIT ADVICE 穿搭建議</b>${w.advice}</div>
+    </div>
   `;
 }
 
