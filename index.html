@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>東京行 2026.08</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/js/all.min.js"></script>
+<style>
+:root{
+  --bg:#F7F4EB;
+  --card:#FFFFFF;
+  --ink:#3A3530;
+  --ink-soft:#8A8275;
+  --line:#E0E5D5;
+  --accent:#C9694F;
+  --accent-soft:#F1DCD2;
+  --green:#7A8B6F;
+  --green-soft:#E6EBDD;
+  --blue:#6F89A8;
+  --blue-soft:#DEE6ED;
+  --gold:#C9A24B;
+  --gold-soft:#F0E5C9;
+  --shadow: 4px 4px 0px var(--line);
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+body{
+  margin:0;
+  font-family:'Noto Sans TC','Zen Maru Gothic',sans-serif;
+  background:var(--bg);
+  background-image:
+    radial-gradient(circle, #ECE7D6 1px, transparent 1px);
+  background-size:18px 18px;
+  color:var(--ink);
+  min-height:100vh;
+  padding-bottom:84px;
+}
+.app{max-width:480px; margin:0 auto; min-height:100vh; position:relative;}
+
+/* Header */
+.topbar{
+  padding:22px 18px 14px;
+  position:sticky; top:0; z-index:30;
+  background:var(--bg);
+  background-image:radial-gradient(circle, #ECE7D6 1px, transparent 1px);
+  background-size:18px 18px;
+}
+.topbar-row{display:flex; align-items:center; justify-content:space-between;}
+.brand{display:flex; align-items:center; gap:10px;}
+.brand-icon{
+  width:38px; height:38px; border-radius:12px;
+  background:var(--accent); color:#fff;
+  display:flex; align-items:center; justify-content:center;
+  font-size:16px; box-shadow:var(--shadow);
+}
+.brand-text h1{font-size:16px; margin:0; font-weight:900; letter-spacing:.5px;}
+.brand-text p{font-size:11px; margin:1px 0 0; color:var(--ink-soft);}
+.countdown{
+  background:var(--card); border-radius:16px; padding:6px 12px;
+  box-shadow:var(--shadow); text-align:center; min-width:62px;
+}
+.countdown .num{font-size:18px; font-weight:900; color:var(--accent); line-height:1.1;}
+.countdown .lbl{font-size:9px; color:var(--ink-soft);}
+
+/* Tabs content area */
+.view{padding:6px 18px 18px; display:none;}
+.view.active{display:block;}
+
+/* Section title */
+.sec-title{
+  font-size:13px; font-weight:700; color:var(--ink-soft);
+  margin:18px 2px 10px; display:flex; align-items:center; gap:6px;
+}
+.sec-title i{font-size:12px;}
+
+/* Date scroller */
+.date-scroll{
+  display:flex; gap:8px; overflow-x:auto; padding:4px 2px 12px;
+  scrollbar-width:none;
+}
+.date-scroll::-webkit-scrollbar{display:none;}
+.date-chip{
+  flex:0 0 auto; width:56px; padding:10px 0; border-radius:16px;
+  background:var(--card); text-align:center; cursor:pointer;
+  box-shadow:var(--shadow); border:2px solid transparent;
+  transition:transform .15s;
+}
+.date-chip.active{border-color:var(--accent); background:var(--accent-soft);}
+.date-chip:active{transform:scale(.95);}
+.date-chip .dow{font-size:10px; color:var(--ink-soft); font-weight:700;}
+.date-chip .day{font-size:18px; font-weight:900; margin:2px 0;}
+.date-chip .tag{font-size:8px; color:var(--accent); font-weight:700;}
+
+/* Weather card */
+.weather-card{
+  background:var(--card); border-radius:20px; padding:14px 16px;
+  box-shadow:var(--shadow); display:flex; align-items:center;
+  justify-content:space-between; margin-bottom:16px;
+}
+.weather-left{display:flex; align-items:center; gap:12px;}
+.weather-icon{font-size:28px; color:var(--gold);}
+.weather-temp{font-size:20px; font-weight:900;}
+.weather-desc{font-size:11px; color:var(--ink-soft); margin-top:2px;}
+.weather-loc{font-size:11px; color:var(--ink-soft); text-align:right;}
+.weather-loc b{display:block; font-size:13px; color:var(--ink); font-weight:700;}
+
+/* Timeline */
+.timeline{position:relative; padding-left:6px;}
+.tl-item{
+  display:flex; gap:12px; margin-bottom:14px; cursor:pointer;
+}
+.tl-time{
+  flex:0 0 52px; font-size:12px; font-weight:900; color:var(--ink-soft);
+  padding-top:14px; text-align:right;
+}
+.tl-line{flex:0 0 20px; display:flex; flex-direction:column; align-items:center;}
+.tl-dot{
+  width:14px; height:14px; border-radius:50%; margin-top:14px;
+  border:3px solid var(--card); box-shadow:0 0 0 2px var(--cat-color);
+  background:var(--cat-color);
+}
+.tl-bar{flex:1; width:2px; background:var(--line); margin-top:4px; border-radius:2px;}
+.tl-card{
+  flex:1; background:var(--card); border-radius:18px; padding:13px 15px;
+  box-shadow:var(--shadow);
+}
+.tl-card:active{transform:scale(.98);}
+.tl-cat{
+  display:inline-flex; align-items:center; gap:5px; font-size:10px; font-weight:700;
+  padding:3px 9px; border-radius:20px; margin-bottom:7px;
+}
+.tl-title{font-size:14px; font-weight:700; margin:0 0 3px;}
+.tl-sub{font-size:11.5px; color:var(--ink-soft); margin:0; line-height:1.5;}
+.tl-note{
+  margin-top:7px; font-size:11px; color:var(--accent); background:var(--accent-soft);
+  border-radius:10px; padding:6px 9px; display:flex; gap:6px; align-items:flex-start;
+}
+
+/* category colors */
+.cat-food{--cat-color:var(--accent); background:var(--accent-soft); color:var(--accent);}
+.cat-spot{--cat-color:var(--green); background:var(--green-soft); color:var(--green);}
+.cat-transport{--cat-color:var(--blue); background:var(--blue-soft); color:var(--blue);}
+.cat-stay{--cat-color:var(--gold); background:var(--gold-soft); color:#9c7a1f;}
+
+/* Booking cards */
+.boarding-pass{
+  background:linear-gradient(135deg,#2C2A28,#3A3633); color:#F7F4EB;
+  border-radius:20px; padding:18px; margin-bottom:14px; position:relative;
+  box-shadow:var(--shadow); overflow:hidden;
+}
+.boarding-pass::after{
+  content:''; position:absolute; right:-14px; top:50%; transform:translateY(-50%);
+  width:28px; height:28px; background:var(--bg); border-radius:50%;
+}
+.bp-top{display:flex; justify-content:space-between; align-items:flex-start;}
+.bp-airline{font-size:11px; opacity:.7; letter-spacing:1px;}
+.bp-flight{font-size:20px; font-weight:900; margin-top:2px;}
+.bp-route{display:flex; align-items:center; justify-content:space-between; margin:16px 0 10px;}
+.bp-city{font-size:24px; font-weight:900;}
+.bp-city-sub{font-size:10px; opacity:.6;}
+.bp-plane{font-size:14px; opacity:.5;}
+.bp-bottom{display:flex; justify-content:space-between; border-top:1px dashed rgba(247,244,235,.25); padding-top:10px; margin-top:8px;}
+.bp-field{font-size:9px; opacity:.6;}
+.bp-field b{display:block; font-size:13px; opacity:1; font-weight:700; margin-top:2px;}
+
+.booking-card{
+  background:var(--card); border-radius:18px; padding:15px 16px; margin-bottom:14px;
+  box-shadow:var(--shadow);
+}
+.bk-head{display:flex; align-items:center; gap:10px; margin-bottom:10px;}
+.bk-icon{
+  width:34px; height:34px; border-radius:11px; display:flex; align-items:center;
+  justify-content:center; font-size:14px; flex:0 0 34px;
+}
+.bk-title{font-size:14px; font-weight:700;}
+.bk-sub{font-size:10.5px; color:var(--ink-soft);}
+.bk-row{
+  display:flex; justify-content:space-between; font-size:12px; padding:6px 0;
+  border-top:1px solid #F2EFE3;
+}
+.bk-row .k{color:var(--ink-soft);}
+.bk-row .v{font-weight:700; text-align:right;}
+.bk-split{
+  margin-top:10px; background:var(--green-soft); border-radius:12px; padding:9px 12px;
+  display:flex; justify-content:space-between; align-items:center; font-size:12px;
+}
+.bk-split b{color:var(--green); font-size:14px;}
+
+/* Todo */
+.todo-card{
+  background:var(--card); border-radius:16px; padding:13px 15px; margin-bottom:10px;
+  box-shadow:var(--shadow); display:flex; align-items:center; gap:12px;
+}
+.todo-check{
+  width:24px; height:24px; border-radius:8px; border:2px solid var(--line);
+  flex:0 0 24px; display:flex; align-items:center; justify-content:center;
+  font-size:12px; color:transparent; cursor:pointer; transition:.15s;
+}
+.todo-check.done{background:var(--green); border-color:var(--green); color:#fff;}
+.todo-text{flex:1; font-size:13.5px; font-weight:500;}
+.todo-text.done{text-decoration:line-through; color:var(--ink-soft);}
+.todo-due{font-size:10px; color:var(--accent); font-weight:700; background:var(--accent-soft); padding:3px 8px; border-radius:20px;}
+
+/* Bottom nav */
+.bottomnav{
+  position:fixed; bottom:0; left:0; right:0; z-index:40;
+  display:flex; justify-content:center;
+}
+.bottomnav-inner{
+  width:100%; max-width:480px; background:var(--card);
+  border-radius:24px 24px 0 0; box-shadow:0 -4px 18px rgba(0,0,0,.06);
+  display:flex; padding:10px 6px calc(10px + env(safe-area-inset-bottom));
+}
+.nav-btn{
+  flex:1; display:flex; flex-direction:column; align-items:center; gap:3px;
+  padding:6px 0; border-radius:14px; cursor:pointer; color:var(--ink-soft);
+  transition:.15s;
+}
+.nav-btn:active{transform:scale(.93);}
+.nav-btn.active{color:var(--accent); background:var(--accent-soft);}
+.nav-btn i{font-size:17px;}
+.nav-btn span{font-size:10px; font-weight:700;}
+
+/* Modal */
+.modal-bg{
+  position:fixed; inset:0; background:rgba(58,53,48,.5); z-index:50;
+  display:none; align-items:flex-end; justify-content:center;
+}
+.modal-bg.open{display:flex;}
+.modal-sheet{
+  width:100%; max-width:480px; background:var(--bg); border-radius:24px 24px 0 0;
+  padding:20px 20px calc(20px + env(safe-area-inset-bottom)); max-height:80vh; overflow-y:auto;
+  animation:slideUp .25s ease;
+}
+@keyframes slideUp{from{transform:translateY(100%);}to{transform:translateY(0);}}
+.modal-handle{width:40px; height:4px; background:var(--line); border-radius:4px; margin:0 auto 16px;}
+.modal-close{
+  position:absolute; right:18px; top:18px; width:30px; height:30px; border-radius:50%;
+  background:var(--card); display:flex; align-items:center; justify-content:center;
+  box-shadow:var(--shadow); color:var(--ink-soft); cursor:pointer;
+}
+
+.empty-state{text-align:center; padding:40px 20px; color:var(--ink-soft);}
+.empty-state i{font-size:30px; margin-bottom:10px; opacity:.4;}
+.empty-state p{font-size:12.5px;}
+
+.add-fab{
+  position:fixed; right:18px; bottom:92px; z-index:35;
+  width:52px; height:52px; border-radius:50%; background:var(--accent); color:#fff;
+  display:flex; align-items:center; justify-content:center; font-size:18px;
+  box-shadow:0 6px 16px rgba(201,105,79,.4); cursor:pointer; border:none;
+}
+.add-fab:active{transform:scale(.92);}
+
+input, textarea, select{
+  width:100%; border:2px solid var(--line); border-radius:12px; padding:10px 12px;
+  font-size:13px; font-family:inherit; background:#fff; color:var(--ink); margin-bottom:10px;
+}
+input:focus, textarea:focus, select:focus{outline:none; border-color:var(--accent);}
+label{font-size:11px; font-weight:700; color:var(--ink-soft); margin-bottom:4px; display:block;}
+.btn-primary{
+  width:100%; background:var(--accent); color:#fff; border:none; border-radius:14px;
+  padding:13px; font-size:14px; font-weight:700; cursor:pointer; box-shadow:var(--shadow);
+}
+.btn-primary:active{transform:scale(.98);}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+
+  <!-- ===== TOPBAR ===== -->
+  <div class="topbar">
+    <div class="topbar-row">
+      <div class="brand">
+        <div class="brand-icon"><i class="fa-solid fa-suitcase-rolling"></i></div>
+        <div class="brand-text">
+          <h1>東京家族旅行</h1>
+          <p>2026.08.05 – 08.09</p>
+        </div>
+      </div>
+      <div class="countdown">
+        <div class="num" id="countdownNum">--</div>
+        <div class="lbl">天後出發</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== VIEW: 行程 ===== -->
+  <div class="view active" id="view-schedule">
+
+    <div class="date-scroll" id="dateScroll"></div>
+
+    <div class="weather-card" id="weatherCard"></div>
+
+    <div class="sec-title"><i class="fa-solid fa-route"></i> 今日時間軸</div>
+    <div class="timeline" id="timeline"></div>
+  </div>
+
+  <!-- ===== VIEW: 預訂 ===== -->
+  <div class="view" id="view-bookings">
+
+    <div class="sec-title"><i class="fa-solid fa-plane"></i> 機票</div>
+    <div id="flightList"></div>
+
+    <div class="sec-title"><i class="fa-solid fa-bed"></i> 住宿</div>
+    <div id="hotelList"></div>
+
+    <div class="sec-title"><i class="fa-solid fa-ticket"></i> 票券 / 憑證</div>
+    <div id="ticketList"></div>
+  </div>
+
+  <!-- ===== VIEW: 待辦 ===== -->
+  <div class="view" id="view-todo">
+    <div class="sec-title"><i class="fa-solid fa-list-check"></i> 出發前待辦</div>
+    <div id="todoList"></div>
+    <div class="sec-title"><i class="fa-solid fa-suitcase"></i> 行李清單</div>
+    <div id="packList"></div>
+  </div>
+
+</div>
+
+<button class="add-fab" id="addFab"><i class="fa-solid fa-plus"></i></button>
+
+<!-- ===== BOTTOM NAV ===== -->
+<div class="bottomnav">
+  <div class="bottomnav-inner">
+    <div class="nav-btn active" data-view="schedule">
+      <i class="fa-solid fa-calendar-days"></i><span>行程</span>
+    </div>
+    <div class="nav-btn" data-view="bookings">
+      <i class="fa-solid fa-book-bookmark"></i><span>預訂</span>
+    </div>
+    <div class="nav-btn" data-view="todo">
+      <i class="fa-solid fa-list-check"></i><span>待辦</span>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Detail Modal ===== -->
+<div class="modal-bg" id="modalBg">
+  <div class="modal-sheet" id="modalSheet" style="position:relative;">
+    <div class="modal-close" id="modalClose"><i class="fa-solid fa-xmark"></i></div>
+    <div class="modal-handle"></div>
+    <div id="modalContent"></div>
+  </div>
+</div>
+
+<script>
+/* ============ DATA ============ */
+const TRIP_DATES = [
+  {date:'2026-08-05', dow:'三', day:5, tag:'出發'},
+  {date:'2026-08-06', dow:'四', day:6, tag:'比賽'},
+  {date:'2026-08-07', dow:'五', day:7, tag:''},
+  {date:'2026-08-08', dow:'六', day:8, tag:''},
+  {date:'2026-08-09', dow:'日', day:9, tag:'返程'},
+];
+
+const WEATHER = {
+  '2026-08-05':{temp:33, desc:'晴朗炎熱', icon:'fa-sun', loc:'千葉'},
+  '2026-08-06':{temp:32, desc:'多雲偶晴', icon:'fa-cloud-sun', loc:'千葉 / 東京'},
+  '2026-08-07':{temp:31, desc:'晴時多雲', icon:'fa-cloud-sun', loc:'東京'},
+  '2026-08-08':{temp:32, desc:'晴朗炎熱', icon:'fa-sun', loc:'東京'},
+  '2026-08-09':{temp:31, desc:'晴時多雲', icon:'fa-cloud-sun', loc:'東京 / 成田'},
+};
+
+const SCHEDULE = {
+  '2026-08-05':[
+    {time:'05:00', cat:'transport', title:'從家出發', sub:'固定車前往桃園機場，車程約40分鐘', note:''},
+    {time:'08:30', cat:'transport', title:'JX800 桃園起飛', sub:'星宇航空 · 直飛3小時25分', note:''},
+    {time:'12:55', cat:'transport', title:'成田T2 抵達', sub:'入境、提行李', note:''},
+    {time:'14:15', cat:'transport', title:'JR往幕張', sub:'成田 → 千葉 → 海浜幕張，約60-70分', note:''},
+    {time:'15:15', cat:'stay', title:'KOKO Hotel Premier 幕張 Check-in', sub:'含早餐方案，3晚的第1晚', note:''},
+    {time:'16:00', cat:'spot', title:'三井Outlet Park 幕張', sub:'逛街、分裝行李', note:''},
+    {time:'17:00', cat:'transport', title:'步行往ZOZOマリン', sub:'約20分鐘', note:''},
+    {time:'18:00', cat:'spot', title:'千葉羅德 vs 西武', sub:'ZOZOマリンスタジアム主場賽', note:'記得買票：Klook搜尋千葉ロッテ'},
+  ],
+  '2026-08-06':[
+    {time:'早上', cat:'food', title:'飯店早餐', sub:'KOKO Hotel 含早餐方案', note:''},
+    {time:'10:00', cat:'spot', title:'HYROX男雙比賽開始', sub:'幕張展覽館，爸爸出賽！', note:''},
+    {time:'13:30', cat:'stay', title:'退房', sub:'確認是否可延遲check-out', note:''},
+    {time:'14:15', cat:'food', title:'東京站 抽號碼牌', sub:'根室花まる KITTE丸の內店', note:''},
+    {time:'14:30', cat:'transport', title:'銀座線→淺草', sub:'EN The House Check-in', note:''},
+    {time:'叫號後', cat:'food', title:'根室花まる 晚餐', sub:'回東京站享用迴轉壽司', note:''},
+    {time:'餐後', cat:'spot', title:'無印良品 銀座旗艦店', sub:'銀座線一站，營業到21:00', note:''},
+  ],
+  '2026-08-07':[
+    {time:'06:45', cat:'transport', title:'飯店出發', sub:'避開地鐵尖峰時段', note:''},
+    {time:'07:30', cat:'spot', title:'豪德寺', sub:'招財貓開賣前先到', note:''},
+    {time:'08:00', cat:'spot', title:'招財貓開賣', sub:'每人限購一隻', note:''},
+    {time:'09:30', cat:'transport', title:'出發往四谷', sub:'約27分鐘', note:''},
+    {time:'10:00', cat:'spot', title:'東京玩具美術館', sub:'寶寶廣場時段票 + 一般展區', note:'7/1需搶寶寶廣場時段票'},
+    {time:'12:00', cat:'transport', title:'出發往中野', sub:'約20分鐘', note:''},
+    {time:'12:30', cat:'food', title:'中野午餐', sub:'中野サンモール商店街', note:''},
+    {time:'13:00', cat:'spot', title:'中野百老匯', sub:'爸爸看二手錶 + 動漫商品', note:''},
+    {time:'16:00', cat:'transport', title:'出發往鶯谷', sub:'JR山手線約18分', note:''},
+    {time:'16:30', cat:'food', title:'鶯谷園燒肉', sub:'Tabelog東京100選，已代訂', note:'逾時不候，務必準時'},
+  ],
+  '2026-08-08':[
+    {time:'05:00', cat:'food', title:'爸爸獨自前往築地', sub:'場外市場早餐', note:''},
+    {time:'09:00', cat:'transport', title:'全家出發', sub:'會合', note:''},
+    {time:'09:25', cat:'spot', title:'東京鐵塔', sub:'外觀打卡拍照', note:''},
+    {time:'10:00', cat:'spot', title:'麻布十番商店街', sub:'たい焼き、たぬき煎餅', note:''},
+    {time:'13:00', cat:'spot', title:"Comme'N KIDS", sub:'麻布台之丘，小學生限定麵包體驗', note:''},
+    {time:'14:00', cat:'spot', title:'teamLab Borderless', sub:'麻布台之丘，不需脫鞋', note:'門票需提前購買'},
+    {time:'17:30', cat:'transport', title:'搭車回淺草', sub:'約25分鐘', note:''},
+    {time:'晚餐', cat:'food', title:'輕鬆吃', sub:'山加商店海鮮居酒屋 或 麻布台之丘內', note:''},
+  ],
+  '2026-08-09':[
+    {time:'10:00', cat:'stay', title:'EN The House 退房', sub:'帶著行李出發', note:''},
+    {time:'10:05', cat:'transport', title:'叫車前往上野', sub:'約10分鐘', note:''},
+    {time:'10:30', cat:'spot', title:'アメ横 採購伴手禮', sub:'行李先存站內置物櫃', note:''},
+    {time:'11:45', cat:'transport', title:'Skyliner 上野出發', sub:'約60分鐘直達成田', note:''},
+    {time:'12:45', cat:'transport', title:'成田T2 抵達', sub:'辦理登機手續', note:''},
+    {time:'13:00', cat:'food', title:'午餐', sub:'成田機場內', note:''},
+    {time:'16:20', cat:'transport', title:'JX803 起飛', sub:'星宇航空 直飛3小時40分', note:''},
+    {time:'19:00', cat:'transport', title:'桃園抵達', sub:'固定車接機', note:''},
+  ],
+};
+
+const FLIGHTS = [
+  {airline:'STARLUX 星宇航空', flight:'JX800', from:'TPE', fromName:'桃園', to:'NRT', toName:'成田', date:'08.05 (三)', dep:'08:30', arr:'12:55', seat:'經濟艙'},
+  {airline:'STARLUX 星宇航空', flight:'JX803', from:'NRT', fromName:'成田', to:'TPE', toName:'桃園', date:'08.09 (日)', dep:'16:20', arr:'19:00', seat:'經濟艙'},
+];
+
+const HOTELS = [
+  {name:'KOKO Hotel Premier 東京灣幕張', icon:'fa-hotel', color:'gold', nights:'08.05 – 08.06 (1晚)', checkin:'15:00', checkout:'11:00', addr:'千葉縣千葉市美浜區ひび野2-7-1', price:'NT$4,650 / 晚（含早餐）'},
+  {name:'EN The House Asakusa Nitenmon', icon:'fa-house', color:'green', nights:'08.06 – 08.09 (3晚)', checkin:'15:00', checkout:'11:00', addr:'淺草寺二天門旁', price:'NT$4,929 / 晚'},
+];
+
+const TICKETS = [
+  {title:'teamLab Borderless 門票', icon:'fa-palette', color:'blue', status:'待購買'},
+  {title:'東京玩具美術館 時段票', icon:'fa-puzzle-piece', color:'gold', status:'7/1開賣'},
+  {title:'千葉羅德主場票', icon:'fa-baseball', color:'green', status:'待購買'},
+  {title:'京成 Skyliner', icon:'fa-train', color:'accent', status:'待購買'},
+  {title:'鶯谷園燒肉代訂', icon:'fa-fire-burner', color:'accent', status:'已代訂 ✓'},
+];
+
+const TODOS_DEFAULT = [
+  {text:'teamLab Borderless 門票購買', due:'盡快', done:false},
+  {text:'玩具美術館寶寶廣場時段票', due:'7/1', done:false},
+  {text:'千葉羅德棒球票購買', due:'盡快', done:false},
+  {text:'Skyliner 票購買', due:'盡快', done:false},
+  {text:'KOKO Hotel 確認信（延遲退房+嬰兒同行）', due:'7/28-7/30', done:false},
+  {text:'淺草今半 或 替代晚餐方案確認', due:'盡快', done:false},
+  {text:'ChargeSPOT 月租方案訂閱', due:'出發前', done:false},
+  {text:'Suica 手機綁定 + 儲值', due:'出發前', done:false},
+];
+
+const PACK_DEFAULT = [
+  {text:'護照、機票、訂房確認單', due:'', done:false},
+  {text:'1歲寶寶尿布、奶粉、副食品', due:'', done:false},
+  {text:'爸爸HYROX比賽裝備', due:'', done:false},
+  {text:'行動電源 / 充電線', due:'', done:false},
+  {text:'常備藥品', due:'', done:false},
+];
+
+/* ============ STATE ============ */
+let state = {
+  selectedDate: TRIP_DATES[0].date,
+  todos: JSON.parse(localStorage.getItem('tokyo_todos')||'null') || TODOS_DEFAULT,
+  packs: JSON.parse(localStorage.getItem('tokyo_packs')||'null') || PACK_DEFAULT,
+};
+
+function saveState(){
+  localStorage.setItem('tokyo_todos', JSON.stringify(state.todos));
+  localStorage.setItem('tokyo_packs', JSON.stringify(state.packs));
+}
+
+/* ============ RENDER: countdown ============ */
+function renderCountdown(){
+  const today = new Date();
+  const target = new Date('2026-08-05T00:00:00+09:00');
+  const diff = Math.ceil((target - today) / (1000*60*60*24));
+  document.getElementById('countdownNum').textContent = diff > 0 ? diff : (diff === 0 ? '🎉' : '已出發');
+}
+
+/* ============ RENDER: date scroller ============ */
+function renderDateScroll(){
+  const el = document.getElementById('dateScroll');
+  el.innerHTML = TRIP_DATES.map(d => `
+    <div class="date-chip ${d.date===state.selectedDate?'active':''}" data-date="${d.date}">
+      <div class="dow">${d.dow}</div>
+      <div class="day">${d.day}</div>
+      <div class="tag">${d.tag||'&nbsp;'}</div>
+    </div>
+  `).join('');
+  el.querySelectorAll('.date-chip').forEach(chip=>{
+    chip.addEventListener('click', ()=>{
+      state.selectedDate = chip.dataset.date;
+      renderDateScroll();
+      renderWeather();
+      renderTimeline();
+    });
+  });
+}
+
+/* ============ RENDER: weather ============ */
+function renderWeather(){
+  const w = WEATHER[state.selectedDate];
+  const el = document.getElementById('weatherCard');
+  if(!w){ el.innerHTML=''; return; }
+  el.innerHTML = `
+    <div class="weather-left">
+      <i class="fa-solid ${w.icon} weather-icon"></i>
+      <div>
+        <div class="weather-temp">${w.temp}°C</div>
+        <div class="weather-desc">${w.desc}</div>
+      </div>
+    </div>
+    <div class="weather-loc"><b>${w.loc}</b>預估天氣</div>
+  `;
+}
+
+/* ============ RENDER: timeline ============ */
+const CAT_LABEL = {food:'美食', spot:'景點', transport:'交通', stay:'住宿'};
+const CAT_ICON = {food:'fa-utensils', spot:'fa-map-pin', transport:'fa-train-subway', stay:'fa-bed'};
+
+function renderTimeline(){
+  const items = SCHEDULE[state.selectedDate] || [];
+  const el = document.getElementById('timeline');
+  if(items.length===0){
+    el.innerHTML = `<div class="empty-state"><i class="fa-solid fa-mug-hot"></i><p>這天還沒有安排行程</p></div>`;
+    return;
+  }
+  el.innerHTML = items.map((it, idx)=>`
+    <div class="tl-item" data-idx="${idx}">
+      <div class="tl-time">${it.time}</div>
+      <div class="tl-line">
+        <div class="tl-dot cat-${it.cat}"></div>
+        ${idx<items.length-1?'<div class="tl-bar"></div>':''}
+      </div>
+      <div class="tl-card">
+        <span class="tl-cat cat-${it.cat}"><i class="fa-solid ${CAT_ICON[it.cat]}"></i> ${CAT_LABEL[it.cat]}</span>
+        <p class="tl-title">${it.title}</p>
+        <p class="tl-sub">${it.sub}</p>
+        ${it.note?`<div class="tl-note"><i class="fa-solid fa-pen" style="margin-top:2px;"></i><span>${it.note}</span></div>`:''}
+      </div>
+    </div>
+  `).join('');
+
+  el.querySelectorAll('.tl-item').forEach(item=>{
+    item.addEventListener('click', ()=>{
+      const it = items[item.dataset.idx];
+      openModal(`
+        <span class="tl-cat cat-${it.cat}" style="margin-bottom:12px;"><i class="fa-solid ${CAT_ICON[it.cat]}"></i> ${CAT_LABEL[it.cat]}</span>
+        <h2 style="margin:6px 0 4px; font-size:19px;">${it.title}</h2>
+        <p style="color:var(--ink-soft); font-size:13px; margin:0 0 14px;">${it.time} ・ ${state.selectedDate}</p>
+        <p style="font-size:13.5px; line-height:1.7;">${it.sub}</p>
+        ${it.note?`<div class="tl-note" style="margin-top:14px;"><i class="fa-solid fa-pen" style="margin-top:2px;"></i><span>${it.note}</span></div>`:''}
+        <button class="btn-primary" style="margin-top:18px;" onclick="window.open('https://www.google.com/maps/search/${encodeURIComponent(it.title)}','_blank')">
+          <i class="fa-solid fa-location-dot"></i> 開啟地圖
+        </button>
+      `);
+    });
+  });
+}
+
+/* ============ RENDER: bookings ============ */
+function renderFlights(){
+  document.getElementById('flightList').innerHTML = FLIGHTS.map(f=>`
+    <div class="boarding-pass">
+      <div class="bp-top">
+        <div>
+          <div class="bp-airline">${f.airline}</div>
+          <div class="bp-flight">${f.flight}</div>
+        </div>
+        <i class="fa-solid fa-plane" style="font-size:18px; opacity:.6;"></i>
+      </div>
+      <div class="bp-route">
+        <div>
+          <div class="bp-city">${f.from}</div>
+          <div class="bp-city-sub">${f.fromName}</div>
+        </div>
+        <div class="bp-plane"><i class="fa-solid fa-arrow-right-long"></i></div>
+        <div style="text-align:right;">
+          <div class="bp-city">${f.to}</div>
+          <div class="bp-city-sub">${f.toName}</div>
+        </div>
+      </div>
+      <div class="bp-bottom">
+        <div class="bp-field">日期<b>${f.date}</b></div>
+        <div class="bp-field">起飛<b>${f.dep}</b></div>
+        <div class="bp-field">抵達<b>${f.arr}</b></div>
+        <div class="bp-field">艙等<b>${f.seat}</b></div>
+      </div>
+    </div>
+  `).join('');
+}
+
+const COLOR_MAP = {gold:'var(--gold)', green:'var(--green)', blue:'var(--blue)', accent:'var(--accent)'};
+const COLOR_SOFT_MAP = {gold:'var(--gold-soft)', green:'var(--green-soft)', blue:'var(--blue-soft)', accent:'var(--accent-soft)'};
+
+function renderHotels(){
+  document.getElementById('hotelList').innerHTML = HOTELS.map(h=>`
+    <div class="booking-card">
+      <div class="bk-head">
+        <div class="bk-icon" style="background:${COLOR_SOFT_MAP[h.color]}; color:${COLOR_MAP[h.color]};">
+          <i class="fa-solid ${h.icon}"></i>
+        </div>
+        <div>
+          <div class="bk-title">${h.name}</div>
+          <div class="bk-sub">${h.nights}</div>
+        </div>
+      </div>
+      <div class="bk-row"><span class="k">Check-in</span><span class="v">${h.checkin}</span></div>
+      <div class="bk-row"><span class="k">Check-out</span><span class="v">${h.checkout}</span></div>
+      <div class="bk-row"><span class="k">地址</span><span class="v">${h.addr}</span></div>
+      <div class="bk-split"><span>每晚房價</span><b>${h.price}</b></div>
+    </div>
+  `).join('');
+}
+
+function renderTickets(){
+  document.getElementById('ticketList').innerHTML = TICKETS.map(t=>`
+    <div class="todo-card">
+      <div class="bk-icon" style="background:${COLOR_SOFT_MAP[t.color]}; color:${COLOR_MAP[t.color]};">
+        <i class="fa-solid ${t.icon}"></i>
+      </div>
+      <div class="todo-text" style="flex:1;">${t.title}</div>
+      <div class="todo-due" style="${t.status.includes('✓')?'background:var(--green-soft); color:var(--green);':''}">${t.status}</div>
+    </div>
+  `).join('');
+}
+
+/* ============ RENDER: todo & pack ============ */
+function renderTodos(){
+  const el = document.getElementById('todoList');
+  if(state.todos.length===0){
+    el.innerHTML = `<div class="empty-state"><i class="fa-solid fa-circle-check"></i><p>目前沒有待辦事項</p></div>`;
+    return;
+  }
+  el.innerHTML = state.todos.map((t,i)=>`
+    <div class="todo-card">
+      <div class="todo-check ${t.done?'done':''}" data-idx="${i}" data-group="todos"><i class="fa-solid fa-check"></i></div>
+      <div class="todo-text ${t.done?'done':''}">${t.text}</div>
+      ${t.due?`<div class="todo-due">${t.due}</div>`:''}
+    </div>
+  `).join('');
+  bindCheck();
+}
+
+function renderPacks(){
+  const el = document.getElementById('packList');
+  if(state.packs.length===0){
+    el.innerHTML = `<div class="empty-state"><i class="fa-solid fa-suitcase"></i><p>目前沒有行李清單</p></div>`;
+    return;
+  }
+  el.innerHTML = state.packs.map((t,i)=>`
+    <div class="todo-card">
+      <div class="todo-check ${t.done?'done':''}" data-idx="${i}" data-group="packs"><i class="fa-solid fa-check"></i></div>
+      <div class="todo-text ${t.done?'done':''}">${t.text}</div>
+    </div>
+  `).join('');
+  bindCheck();
+}
+
+function bindCheck(){
+  document.querySelectorAll('.todo-check').forEach(chk=>{
+    chk.onclick = ()=>{
+      const group = chk.dataset.group;
+      const idx = chk.dataset.idx;
+      state[group][idx].done = !state[group][idx].done;
+      saveState();
+      if(group==='todos') renderTodos(); else renderPacks();
+    };
+  });
+}
+
+/* ============ Modal ============ */
+function openModal(html){
+  document.getElementById('modalContent').innerHTML = html;
+  document.getElementById('modalBg').classList.add('open');
+}
+function closeModal(){
+  document.getElementById('modalBg').classList.remove('open');
+}
+document.getElementById('modalClose').onclick = closeModal;
+document.getElementById('modalBg').onclick = (e)=>{ if(e.target.id==='modalBg') closeModal(); };
+
+/* ============ FAB (add new todo) ============ */
+document.getElementById('addFab').onclick = ()=>{
+  const currentView = document.querySelector('.view.active').id;
+  if(currentView !== 'view-todo'){
+    openModal(`
+      <h2 style="margin:6px 0 14px; font-size:17px;">切換到「待辦」分頁即可新增項目</h2>
+      <button class="btn-primary" onclick="document.querySelector('[data-view=todo]').click(); closeModal();">前往待辦</button>
+    `);
+    return;
+  }
+  openModal(`
+    <h2 style="margin:6px 0 14px; font-size:17px;">新增待辦事項</h2>
+    <label>內容</label>
+    <input type="text" id="newTodoText" placeholder="例如：確認團體票">
+    <label>期限備註（選填）</label>
+    <input type="text" id="newTodoDue" placeholder="例如：7/20前">
+    <button class="btn-primary" id="newTodoSubmit">新增</button>
+  `);
+  document.getElementById('newTodoSubmit').onclick = ()=>{
+    const text = document.getElementById('newTodoText').value.trim();
+    const due = document.getElementById('newTodoDue').value.trim();
+    if(!text) return;
+    state.todos.unshift({text, due, done:false});
+    saveState();
+    renderTodos();
+    closeModal();
+  };
+};
+
+/* ============ Bottom nav switching ============ */
+document.querySelectorAll('.nav-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+    document.getElementById('view-'+btn.dataset.view).classList.add('active');
+    window.scrollTo({top:0, behavior:'smooth'});
+  });
+});
+
+/* ============ INIT ============ */
+renderCountdown();
+renderDateScroll();
+renderWeather();
+renderTimeline();
+renderFlights();
+renderHotels();
+renderTickets();
+renderTodos();
+renderPacks();
+</script>
+</body>
+</html>
