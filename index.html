@@ -40,19 +40,35 @@ body{
 
 /* Header */
 .topbar{
-  padding:22px 18px 14px;
+  padding:0 0 14px;
   position:sticky; top:0; z-index:30;
   background:var(--bg);
   background-image:radial-gradient(circle, #ECE7D6 1px, transparent 1px);
   background-size:18px 18px;
 }
-.topbar-row{display:flex; align-items:center; justify-content:space-between;}
+.sousou-strip{
+  height:9px; width:100%; display:flex; overflow:hidden;
+}
+.sousou-strip span{flex:1; height:100%;}
+.sousou-strip span:nth-child(1){background:#C9694F;}
+.sousou-strip span:nth-child(2){background:#3F6B8C;}
+.sousou-strip span:nth-child(3){background:#D9A23B;}
+.sousou-strip span:nth-child(4){background:#7A8B6F;}
+.sousou-strip span:nth-child(5){background:#C9694F;}
+.sousou-strip span:nth-child(6){background:#3F6B8C;}
+.sousou-strip span:nth-child(7){background:#D9A23B;}
+.sousou-strip span:nth-child(8){background:#7A8B6F;}
+.topbar-row{display:flex; align-items:center; justify-content:space-between; padding:22px 18px 0;}
 .brand{display:flex; align-items:center; gap:10px;}
 .brand-icon{
   width:38px; height:38px; border-radius:12px;
-  background:var(--accent); color:#fff;
+  background:#C9694F; color:#fff; position:relative; overflow:hidden;
   display:flex; align-items:center; justify-content:center;
   font-size:16px; box-shadow:var(--shadow);
+}
+.brand-icon::after{
+  content:''; position:absolute; right:-6px; bottom:-6px; width:18px; height:18px;
+  background:#D9A23B; border-radius:50%; opacity:.85;
 }
 .brand-text h1{font-size:16px; margin:0; font-weight:900; letter-spacing:.5px;}
 .brand-text p{font-size:11px; margin:1px 0 0; color:var(--ink-soft);}
@@ -84,9 +100,13 @@ body{
   flex:0 0 auto; width:56px; padding:10px 0; border-radius:16px;
   background:var(--card); text-align:center; cursor:pointer;
   box-shadow:var(--shadow); border:2px solid transparent;
-  transition:transform .15s;
+  transition:transform .15s; position:relative; overflow:hidden;
 }
-.date-chip.active{border-color:var(--accent); background:var(--accent-soft);}
+.date-chip.active{border-color:#C9694F; background:var(--accent-soft);}
+.date-chip.active::before{
+  content:''; position:absolute; top:0; left:0; right:0; height:4px;
+  background:linear-gradient(90deg,#C9694F 0 33%, #D9A23B 33% 66%, #3F6B8C 66% 100%);
+}
 .date-chip:active{transform:scale(.95);}
 .date-chip .dow{font-size:10px; color:var(--ink-soft); font-weight:700;}
 .date-chip .day{font-size:18px; font-weight:900; margin:2px 0;}
@@ -230,14 +250,23 @@ body{
   width:100%; max-width:480px; background:var(--card);
   border-radius:24px 24px 0 0; box-shadow:0 -4px 18px rgba(0,0,0,.06);
   display:flex; padding:10px 6px calc(10px + env(safe-area-inset-bottom));
+  position:relative; overflow:hidden;
+}
+.bottomnav-inner::before{
+  content:''; position:absolute; top:0; left:0; right:0; height:4px;
+  background:linear-gradient(90deg,#C9694F 0 25%, #3F6B8C 25% 50%, #D9A23B 50% 75%, #7A8B6F 75% 100%);
 }
 .nav-btn{
   flex:1; display:flex; flex-direction:column; align-items:center; gap:3px;
   padding:6px 0; border-radius:14px; cursor:pointer; color:var(--ink-soft);
-  transition:.15s;
+  transition:.15s; position:relative;
 }
 .nav-btn:active{transform:scale(.93);}
-.nav-btn.active{color:var(--accent); background:var(--accent-soft);}
+.nav-btn.active{color:#fff;}
+.nav-btn.active[data-view="schedule"]{background:#C9694F;}
+.nav-btn.active[data-view="bookings"]{background:#3F6B8C;}
+.nav-btn.active[data-view="todo"]{background:#D9A23B;}
+.nav-btn.active[data-view="expense"]{background:#7A8B6F;}
 .nav-btn i{font-size:17px;}
 .nav-btn span{font-size:10px; font-weight:700;}
 
@@ -332,6 +361,7 @@ label{font-size:11px; font-weight:700; color:var(--ink-soft); margin-bottom:4px;
 
   <!-- ===== TOPBAR ===== -->
   <div class="topbar">
+    <div class="sousou-strip"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
     <div class="topbar-row">
       <div class="brand">
         <div class="brand-icon"><i class="fa-solid fa-suitcase-rolling"></i></div>
