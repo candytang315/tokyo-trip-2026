@@ -849,11 +849,49 @@ function renderTodos(){
   el.innerHTML = state.todos.map((t,i)=>`
     <div class="todo-card">
       <div class="todo-check ${t.done?'done':''}" data-idx="${i}" data-group="todos"><i class="fa-solid fa-check"></i></div>
-      <div class="todo-text ${t.done?'done':''}">${t.text}</div>
+      <div class="todo-text ${t.done?'done':''}" data-idx="${i}" data-group="todos" style="white-space:pre-wrap; cursor:pointer;">${t.text}</div>
       ${t.due?`<div class="todo-due">${t.due}</div>`:''}
     </div>
   `).join('');
   bindCheck();
+  bindTodoTextEdit();
+}
+
+function bindTodoTextEdit(){
+  document.querySelectorAll('.todo-text[data-group="todos"]').forEach(txt=>{
+    txt.onclick = ()=>{
+      const idx = txt.dataset.idx;
+      openEditTodoModal(idx);
+    };
+  });
+}
+
+function openEditTodoModal(idx){
+  const t = state.todos[idx];
+  openModal(`
+    <h2 style="margin:6px 0 14px; font-size:17px;">編輯待辦事項</h2>
+    <label>內容（可換行）</label>
+    <textarea id="editTodoText" rows="4" style="white-space:pre-wrap;">${t.text}</textarea>
+    <label>期限備註（選填）</label>
+    <input type="text" id="editTodoDue" value="${t.due||''}">
+    <button class="btn-primary" id="editTodoSubmit">儲存</button>
+    <button class="btn-primary" id="editTodoDelete" style="background:#D9A0A0; margin-top:8px;">刪除這個項目</button>
+  `);
+  document.getElementById('editTodoSubmit').onclick = ()=>{
+    const text = document.getElementById('editTodoText').value.trim();
+    if(!text) return;
+    state.todos[idx].text = text;
+    state.todos[idx].due = document.getElementById('editTodoDue').value.trim();
+    saveState();
+    renderTodos();
+    closeModal();
+  };
+  document.getElementById('editTodoDelete').onclick = ()=>{
+    state.todos.splice(idx,1);
+    saveState();
+    renderTodos();
+    closeModal();
+  };
 }
 
 function renderPacks(){
@@ -865,10 +903,45 @@ function renderPacks(){
   el.innerHTML = state.packs.map((t,i)=>`
     <div class="todo-card">
       <div class="todo-check ${t.done?'done':''}" data-idx="${i}" data-group="packs"><i class="fa-solid fa-check"></i></div>
-      <div class="todo-text ${t.done?'done':''}">${t.text}</div>
+      <div class="todo-text ${t.done?'done':''}" data-idx="${i}" data-group="packs" style="white-space:pre-wrap; cursor:pointer;">${t.text}</div>
     </div>
   `).join('');
   bindCheck();
+  bindPackTextEdit();
+}
+
+function bindPackTextEdit(){
+  document.querySelectorAll('.todo-text[data-group="packs"]').forEach(txt=>{
+    txt.onclick = ()=>{
+      const idx = txt.dataset.idx;
+      openEditPackModal(idx);
+    };
+  });
+}
+
+function openEditPackModal(idx){
+  const t = state.packs[idx];
+  openModal(`
+    <h2 style="margin:6px 0 14px; font-size:17px;">編輯行李項目</h2>
+    <label>內容（可換行）</label>
+    <textarea id="editPackText" rows="4" style="white-space:pre-wrap;">${t.text}</textarea>
+    <button class="btn-primary" id="editPackSubmit">儲存</button>
+    <button class="btn-primary" id="editPackDelete" style="background:#D9A0A0; margin-top:8px;">刪除這個項目</button>
+  `);
+  document.getElementById('editPackSubmit').onclick = ()=>{
+    const text = document.getElementById('editPackText').value.trim();
+    if(!text) return;
+    state.packs[idx].text = text;
+    saveState();
+    renderPacks();
+    closeModal();
+  };
+  document.getElementById('editPackDelete').onclick = ()=>{
+    state.packs.splice(idx,1);
+    saveState();
+    renderPacks();
+    closeModal();
+  };
 }
 
 function bindCheck(){
