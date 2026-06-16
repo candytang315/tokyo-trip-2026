@@ -397,6 +397,8 @@ label{font-size:11px; font-weight:700; color:var(--ink-soft); margin-bottom:4px;
     <div id="todoList"></div>
     <div class="sec-title"><i class="fa-solid fa-suitcase"></i> 行李清單</div>
     <div id="packList"></div>
+    <div class="sec-title"><i class="fa-solid fa-cart-shopping"></i> 購買清單</div>
+    <div id="shopList"></div>
   </div>
 
   <!-- ===== VIEW: 記帳 ===== -->
@@ -548,6 +550,12 @@ const PACK_DEFAULT = [
   {text:'常備藥品', due:'', done:false},
 ];
 
+const SHOP_DEFAULT = [
+  {text:'豪德寺招財貓', due:'', done:false},
+  {text:'無印良品銀座限定商品', due:'', done:false},
+  {text:'上野アメ横伴手禮', due:'', done:false},
+];
+
 const EXP_CATS = {
   food:{label:'餐飲', icon:'fa-utensils', color:'accent'},
   transport:{label:'交通', icon:'fa-train-subway', color:'blue'},
@@ -566,6 +574,7 @@ let state = {
   selectedDate: TRIP_DATES[0].date,
   todos: JSON.parse(localStorage.getItem('tokyo_todos')||'null') || TODOS_DEFAULT,
   packs: JSON.parse(localStorage.getItem('tokyo_packs')||'null') || PACK_DEFAULT,
+  shops: JSON.parse(localStorage.getItem('tokyo_shops')||'null') || SHOP_DEFAULT,
   expenses: JSON.parse(localStorage.getItem('tokyo_expenses')||'null') || EXPENSE_DEFAULT,
   rate: parseFloat(localStorage.getItem('tokyo_rate')) || JPY_TO_TWD,
   schedule: JSON.parse(localStorage.getItem('tokyo_schedule')||'null') || JSON.parse(JSON.stringify(SCHEDULE_DEFAULT)),
@@ -574,6 +583,7 @@ let state = {
 function saveState(){
   localStorage.setItem('tokyo_todos', JSON.stringify(state.todos));
   localStorage.setItem('tokyo_packs', JSON.stringify(state.packs));
+  localStorage.setItem('tokyo_shops', JSON.stringify(state.shops));
   localStorage.setItem('tokyo_expenses', JSON.stringify(state.expenses));
   localStorage.setItem('tokyo_rate', state.rate);
   localStorage.setItem('tokyo_schedule', JSON.stringify(state.schedule));
@@ -944,6 +954,61 @@ function openEditPackModal(idx){
   };
 }
 
+/* ============ RENDER: shopping list ============ */
+function renderShops(){
+  const el = document.getElementById('shopList');
+  if(state.shops.length===0){
+    el.innerHTML = `<div class="empty-state"><i class="fa-solid fa-cart-shopping"></i><p>目前沒有購買清單</p></div>`;
+    return;
+  }
+  el.innerHTML = state.shops.map((t,i)=>`
+    <div class="todo-card">
+      <div class="todo-check ${t.done?'done':''}" data-idx="${i}" data-group="shops"><i class="fa-solid fa-check"></i></div>
+      <div class="todo-text ${t.done?'done':''}" data-idx="${i}" data-group="shops" style="white-space:pre-wrap; cursor:pointer;">${t.text}</div>
+      ${t.due?`<div class="todo-due">${t.due}</div>`:''}
+    </div>
+  `).join('');
+  bindCheck();
+  bindShopTextEdit();
+}
+
+function bindShopTextEdit(){
+  document.querySelectorAll('.todo-text[data-group="shops"]').forEach(txt=>{
+    txt.onclick = ()=>{
+      const idx = txt.dataset.idx;
+      openEditShopModal(idx);
+    };
+  });
+}
+
+function openEditShopModal(idx){
+  const t = state.shops[idx];
+  openModal(`
+    <h2 style="margin:6px 0 14px; font-size:17px;">編輯購買項目</h2>
+    <label>內容（可換行）</label>
+    <textarea id="editShopText" rows="4" style="white-space:pre-wrap;">${t.text}</textarea>
+    <label>備註（選填，例如價格或店家）</label>
+    <input type="text" id="editShopDue" value="${t.due||''}">
+    <button class="btn-primary" id="editShopSubmit">儲存</button>
+    <button class="btn-primary" id="editShopDelete" style="background:#D9A0A0; margin-top:8px;">刪除這個項目</button>
+  `);
+  document.getElementById('editShopSubmit').onclick = ()=>{
+    const text = document.getElementById('editShopText').value.trim();
+    if(!text) return;
+    state.shops[idx].text = text;
+    state.shops[idx].due = document.getElementById('editShopDue').value.trim();
+    saveState();
+    renderShops();
+    closeModal();
+  };
+  document.getElementById('editShopDelete').onclick = ()=>{
+    state.shops.splice(idx,1);
+    saveState();
+    renderShops();
+    closeModal();
+  };
+}
+
 function bindCheck(){
   document.querySelectorAll('.todo-check').forEach(chk=>{
     chk.onclick = ()=>{
@@ -1101,23 +1166,34 @@ document.getElementById('addFab').onclick = ()=>{
     return;
   }
   openModal(`
-    <h2 style="margin:6px 0 14px; font-size:17px;">新增待辦事項</h2>
-    <label>內容</label>
-    <input type="text" id="newTodoText" placeholder="例如：確認團體票">
-    <label>期限備註（選填）</label>
-    <input type="text" id="newTodoDue" placeholder="例如：7/20前">
-    <button class="btn-primary" id="newTodoSubmit">新增</button>
+    <h2 style="margin:6px 0 14px; font-size:17px;">新增到哪個清單？</h2>
+    <button class="btn-primary" id="addToTodo" style="margin-bottom:8px;"><i class="fa-solid fa-list-check"></i> 出發前待辦</button>
+    <button class="btn-primary" id="addToPack" style="margin-bottom:8px; background:var(--gold);"><i class="fa-solid fa-suitcase"></i> 行李清單</button>
+    <button class="btn-primary" id="addToShop" style="background:var(--green);"><i class="fa-solid fa-cart-shopping"></i> 購買清單</button>
   `);
-  document.getElementById('newTodoSubmit').onclick = ()=>{
-    const text = document.getElementById('newTodoText').value.trim();
-    const due = document.getElementById('newTodoDue').value.trim();
+  document.getElementById('addToTodo').onclick = ()=> openNewItemModal('todos', renderTodos, true);
+  document.getElementById('addToPack').onclick = ()=> openNewItemModal('packs', renderPacks, false);
+  document.getElementById('addToShop').onclick = ()=> openNewItemModal('shops', renderShops, true);
+};
+
+function openNewItemModal(group, renderFn, hasDue){
+  openModal(`
+    <h2 style="margin:6px 0 14px; font-size:17px;">新增項目</h2>
+    <label>內容（可換行）</label>
+    <textarea id="newItemText" rows="3" placeholder="輸入內容"></textarea>
+    ${hasDue ? `<label>備註（選填）</label><input type="text" id="newItemDue" placeholder="例如：7/20前 或 價格">` : ''}
+    <button class="btn-primary" id="newItemSubmit">新增</button>
+  `);
+  document.getElementById('newItemSubmit').onclick = ()=>{
+    const text = document.getElementById('newItemText').value.trim();
     if(!text) return;
-    state.todos.unshift({text, due, done:false});
+    const due = hasDue ? document.getElementById('newItemDue').value.trim() : '';
+    state[group].unshift({text, due, done:false});
     saveState();
-    renderTodos();
+    renderFn();
     closeModal();
   };
-};
+}
 
 /* ============ Bottom nav switching ============ */
 document.querySelectorAll('.nav-btn').forEach(btn=>{
@@ -1140,6 +1216,7 @@ renderHotels();
 renderTickets();
 renderTodos();
 renderPacks();
+renderShops();
 renderExpenseDashboard();
 renderExpenseList();
 </script>
