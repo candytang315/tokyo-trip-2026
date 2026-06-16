@@ -97,10 +97,11 @@ body{
 }
 .date-scroll::-webkit-scrollbar{display:none;}
 .date-chip{
-  flex:0 0 auto; width:56px; padding:10px 0; border-radius:16px;
+  flex:0 0 auto; width:64px; height:64px; padding:0; border-radius:16px;
   background:var(--card); text-align:center; cursor:pointer;
   box-shadow:var(--shadow); border:2px solid transparent;
   transition:transform .15s; position:relative; overflow:hidden;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1px;
 }
 .date-chip.active{border-color:#C9694F; background:var(--accent-soft);}
 .date-chip.active::before{
@@ -108,9 +109,9 @@ body{
   background:linear-gradient(90deg,#C9694F 0 33%, #D9A23B 33% 66%, #3F6B8C 66% 100%);
 }
 .date-chip:active{transform:scale(.95);}
+.date-chip .daynum{font-size:9px; color:var(--accent); font-weight:900; letter-spacing:.5px;}
+.date-chip .day{font-size:17px; font-weight:900; line-height:1.1;}
 .date-chip .dow{font-size:10px; color:var(--ink-soft); font-weight:700;}
-.date-chip .day{font-size:18px; font-weight:900; margin:2px 0;}
-.date-chip .tag{font-size:8px; color:var(--accent); font-weight:700;}
 
 /* Weather card */
 .weather-card{
@@ -596,11 +597,11 @@ function renderCountdown(){
 /* ============ RENDER: date scroller ============ */
 function renderDateScroll(){
   const el = document.getElementById('dateScroll');
-  el.innerHTML = TRIP_DATES.map(d => `
+  el.innerHTML = TRIP_DATES.map((d,i) => `
     <div class="date-chip ${d.date===state.selectedDate?'active':''}" data-date="${d.date}">
-      <div class="dow">${d.dow}</div>
-      <div class="day">${d.day}</div>
-      <div class="tag">${d.tag||'&nbsp;'}</div>
+      <div class="daynum">DAY${i+1}</div>
+      <div class="day">8/${d.day}</div>
+      <div class="dow">星期${d.dow}</div>
     </div>
   `).join('');
   el.querySelectorAll('.date-chip').forEach(chip=>{
