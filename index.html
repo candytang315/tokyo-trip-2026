@@ -234,6 +234,9 @@ body{
 .todo-text{flex:1; font-size:13.5px; font-weight:500;}
 .todo-text.done{text-decoration:line-through; color:var(--ink-soft);}
 .todo-due{font-size:10px; color:var(--accent); font-weight:700; background:var(--accent-soft); padding:3px 8px; border-radius:20px;}
+.shop-thumb{
+  width:42px; height:42px; border-radius:10px; object-fit:cover; flex:0 0 42px; cursor:pointer;
+}
 
 /* Bottom nav */
 .bottomnav{
@@ -966,6 +969,7 @@ function renderShops(){
   el.innerHTML = state.shops.map((t,i)=>`
     <div class="todo-card">
       <div class="todo-check ${t.done?'done':''}" data-idx="${i}" data-group="shops"><i class="fa-solid fa-check"></i></div>
+      ${t.photo ? `<img src="${t.photo}" class="shop-thumb" data-idx="${i}" data-group="shops" onerror="this.style.display='none'">` : ''}
       <div class="todo-text ${t.done?'done':''}" data-idx="${i}" data-group="shops" style="white-space:pre-wrap; cursor:pointer;">${t.text}</div>
       ${t.due?`<div class="todo-due">${t.due}</div>`:''}
     </div>
@@ -975,9 +979,9 @@ function renderShops(){
 }
 
 function bindShopTextEdit(){
-  document.querySelectorAll('.todo-text[data-group="shops"]').forEach(txt=>{
-    txt.onclick = ()=>{
-      const idx = txt.dataset.idx;
+  document.querySelectorAll('.todo-text[data-group="shops"], .shop-thumb[data-group="shops"]').forEach(el=>{
+    el.onclick = ()=>{
+      const idx = el.dataset.idx;
       openEditShopModal(idx);
     };
   });
@@ -987,8 +991,11 @@ function openEditShopModal(idx){
   const t = state.shops[idx];
   openModal(`
     <h2 style="margin:6px 0 14px; font-size:17px;">編輯購買項目</h2>
+    ${t.photo ? `<img src="${t.photo}" style="width:100%; height:140px; object-fit:cover; border-radius:14px; margin-bottom:10px;" onerror="this.style.display='none'">` : ''}
     <label>內容（可換行）</label>
     <textarea id="editShopText" rows="4" style="white-space:pre-wrap;">${t.text}</textarea>
+    <label>商品照片網址（選填）</label>
+    <input type="text" id="editShopPhoto" value="${t.photo||''}" placeholder="貼上圖片網址 https://...">
     <label>備註（選填，例如價格或店家）</label>
     <input type="text" id="editShopDue" value="${t.due||''}">
     <button class="btn-primary" id="editShopSubmit">儲存</button>
@@ -999,6 +1006,7 @@ function openEditShopModal(idx){
     if(!text) return;
     state.shops[idx].text = text;
     state.shops[idx].due = document.getElementById('editShopDue').value.trim();
+    state.shops[idx].photo = document.getElementById('editShopPhoto').value.trim();
     saveState();
     renderShops();
     closeModal();
@@ -1175,8 +1183,34 @@ document.getElementById('addFab').onclick = ()=>{
   `);
   document.getElementById('addToTodo').onclick = ()=> openNewItemModal('todos', renderTodos, true);
   document.getElementById('addToPack').onclick = ()=> openNewItemModal('packs', renderPacks, false);
-  document.getElementById('addToShop').onclick = ()=> openNewItemModal('shops', renderShops, true);
+  document.getElementById('addToShop').onclick = ()=> openNewShopModal();
 };
+
+function openNewShopModal(){
+  openModal(`
+    <h2 style="margin:6px 0 14px; font-size:17px;">新增購買項目</h2>
+    <label>內容（可換行）</label>
+    <textarea id="newShopText" rows="3" placeholder="輸入商品名稱"></textarea>
+    <label>商品照片網址（選填）</label>
+    <input type="text" id="newShopPhoto" placeholder="貼上圖片網址 https://...">
+    <label>備註（選填，例如價格或店家）</label>
+    <input type="text" id="newShopDue" placeholder="例如：藥妝店/¥1,500">
+    <button class="btn-primary" id="newShopSubmit">新增</button>
+  `);
+  document.getElementById('newShopSubmit').onclick = ()=>{
+    const text = document.getElementById('newShopText').value.trim();
+    if(!text) return;
+    state.shops.unshift({
+      text,
+      due: document.getElementById('newShopDue').value.trim(),
+      photo: document.getElementById('newShopPhoto').value.trim(),
+      done:false
+    });
+    saveState();
+    renderShops();
+    closeModal();
+  };
+}
 
 function openNewItemModal(group, renderFn, hasDue){
   openModal(`
