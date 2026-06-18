@@ -351,7 +351,22 @@ label{font-size:11px; font-weight:700; color:var(--ink-soft); margin-bottom:4px;
 </style>
 </head>
 <body>
-<div class="app" id="app">
+
+<!-- ===== LOGIN GATE ===== -->
+<div id="loginGate" style="position:fixed; inset:0; z-index:200; background:#FBF6EC; display:flex; align-items:center; justify-content:center; padding:24px;">
+  <div style="max-width:340px; width:100%; background:#fff; border-radius:24px; padding:32px 26px; box-shadow:4px 4px 0px #E0E5D5; text-align:center;">
+    <div style="width:54px; height:54px; border-radius:16px; background:#3F6B8C; color:#fff; display:flex; align-items:center; justify-content:center; font-size:22px; margin:0 auto 16px;">
+      <i class="fa-solid fa-suitcase-rolling"></i>
+    </div>
+    <h1 style="font-size:17px; margin:0 0 4px; font-weight:900;">東京家族旅行</h1>
+    <p style="font-size:12px; color:#8A8275; margin:0 0 22px;">請輸入密碼進入</p>
+    <input type="password" id="loginPwInput" placeholder="密碼" style="text-align:center; font-size:16px; letter-spacing:2px;">
+    <button class="btn-primary" id="loginSubmitBtn" style="margin-top:8px;">進入</button>
+    <p id="loginError" style="color:#C9694F; font-size:11px; margin-top:10px; display:none;">密碼錯誤，請再試一次</p>
+  </div>
+</div>
+
+<div class="app" id="app" style="display:none;">
 
   <!-- ===== TOPBAR ===== -->
   <div class="topbar">
@@ -444,7 +459,70 @@ label{font-size:11px; font-weight:700; color:var(--ink-soft); margin-bottom:4px;
 </div>
 
 <script>
-/* ============ DATA ============ */
+/* ============ CONFIG ============ */
+const WORKER_API = 'https://steep-sound-fe2e.candytang315.workers.dev';
+
+/* ============ LOGIN ============ */
+async function checkLogin(){
+  const saved = sessionStorage.getItem('tokyo_auth');
+  if(saved){
+    document.getElementById('loginGate').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    return true;
+  }
+  return false;
+}
+
+document.getElementById('loginSubmitBtn').onclick = async ()=>{
+  const pw = document.getElementById('loginPwInput').value;
+  document.getElementById('loginSubmitBtn').textContent = '驗證中...';
+  try{
+    const res = await fetch(`${WORKER_API}/login`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({password: pw})
+    });
+    const data = await res.json();
+    if(data.ok){
+      sessionStorage.setItem('tokyo_auth', data.token);
+      document.getElementById('loginGate').style.display = 'none';
+      document.getElementById('app').style.display = 'block';
+      await initApp();
+    } else {
+      document.getElementById('loginError').style.display = 'block';
+      document.getElementById('loginSubmitBtn').textContent = '進入';
+    }
+  } catch(e){
+    document.getElementById('loginError').textContent = '連線失敗，請檢查網路後再試';
+    document.getElementById('loginError').style.display = 'block';
+    document.getElementById('loginSubmitBtn').textContent = '進入';
+  }
+};
+document.getElementById('loginPwInput').addEventListener('keydown', (e)=>{
+  if(e.key === 'Enter') document.getElementById('loginSubmitBtn').click();
+});
+
+/* ============ CLOUD DATA SYNC ============ */
+async function fetchCloudData(){
+  const authToken = sessionStorage.getItem('tokyo_auth');
+  const res = await fetch(`${WORKER_API}/data`, {
+    headers: {'X-Site-Password': authToken}
+  });
+  if(!res.ok) throw new Error('讀取失敗');
+  return await res.json();
+}
+
+async function saveCloudData(data){
+  const authToken = sessionStorage.getItem('tokyo_auth');
+  const res = await fetch(`${WORKER_API}/data`, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json', 'X-Site-Password': authToken},
+    body: JSON.stringify(data)
+  });
+  if(!res.ok) throw new Error('儲存失敗');
+  return await res.json();
+}
+
 const TRIP_DATES = [
   {date:'2026-08-05', dow:'三', day:5, tag:'出發'},
   {date:'2026-08-06', dow:'四', day:6, tag:'比賽'},
@@ -576,24 +654,37 @@ const JPY_TO_TWD = 0.22; // 估算匯率，可在頁面調整
 const EXPENSE_DEFAULT = [];
 
 /* ============ STATE ============ */
+/* ============ STATE ============ */
 let state = {
   selectedDate: TRIP_DATES[0].date,
-  todos: JSON.parse(localStorage.getItem('tokyo_todos')||'null') || TODOS_DEFAULT,
-  packs: JSON.parse(localStorage.getItem('tokyo_packs')||'null') || PACK_DEFAULT,
-  shops: JSON.parse(localStorage.getItem('tokyo_shops')||'null') || SHOP_DEFAULT,
-  expenses: JSON.parse(localStorage.getItem('tokyo_expenses')||'null') || EXPENSE_DEFAULT,
-  rate: parseFloat(localStorage.getItem('tokyo_rate')) || JPY_TO_TWD,
-  schedule: JSON.parse(localStorage.getItem('tokyo_schedule')||'null') || JSON.parse(JSON.stringify(SCHEDULE_DEFAULT)),
+  todos: [],
+  packs: [],
+  shops: [],
+  expenses: [],
+  rate: JPY_TO_TWD,
+  schedule: JSON.parse(JSON.stringify(SCHEDULE_DEFAULT)),
 };
 
+let saveTimer = null;
 function saveState(){
-  localStorage.setItem('tokyo_todos', JSON.stringify(state.todos));
-  localStorage.setItem('tokyo_packs', JSON.stringify(state.packs));
-  localStorage.setItem('tokyo_shops', JSON.stringify(state.shops));
-  localStorage.setItem('tokyo_expenses', JSON.stringify(state.expenses));
-  localStorage.setItem('tokyo_rate', state.rate);
-  localStorage.setItem('tokyo_schedule', JSON.stringify(state.schedule));
+  // debounce：避免短時間內連續觸發多次寫入
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(async ()=>{
+    try{
+      await saveCloudData({
+        todos: state.todos,
+        packs: state.packs,
+        shops: state.shops,
+        expenses: state.expenses,
+        rate: state.rate,
+        scheduleOverrides: state.schedule,
+      });
+    } catch(e){
+      console.error('儲存失敗', e);
+    }
+  }, 600);
 }
+
 
 /* ============ RENDER: countdown ============ */
 function renderCountdown(){
@@ -1257,18 +1348,44 @@ document.querySelectorAll('.nav-btn').forEach(btn=>{
 });
 
 /* ============ INIT ============ */
-renderCountdown();
-renderDateScroll();
-renderWeather();
-renderTimeline();
-renderFlights();
-renderHotels();
-renderTickets();
-renderTodos();
-renderPacks();
-renderShops();
-renderExpenseDashboard();
-renderExpenseList();
+/* ============ INIT ============ */
+async function initApp(){
+  try{
+    const cloud = await fetchCloudData();
+    state.todos = cloud.todos && cloud.todos.length ? cloud.todos : TODOS_DEFAULT;
+    state.packs = cloud.packs && cloud.packs.length ? cloud.packs : PACK_DEFAULT;
+    state.shops = cloud.shops && cloud.shops.length ? cloud.shops : SHOP_DEFAULT;
+    state.expenses = cloud.expenses || [];
+    state.rate = cloud.rate || JPY_TO_TWD;
+    const overrides = cloud.scheduleOverrides || {};
+    state.schedule = Object.keys(overrides).length ? overrides : JSON.parse(JSON.stringify(SCHEDULE_DEFAULT));
+  } catch(e){
+    console.error('雲端資料讀取失敗，使用預設值', e);
+    state.todos = TODOS_DEFAULT;
+    state.packs = PACK_DEFAULT;
+    state.shops = SHOP_DEFAULT;
+  }
+
+  renderCountdown();
+  renderDateScroll();
+  renderWeather();
+  renderTimeline();
+  renderFlights();
+  renderHotels();
+  renderTickets();
+  renderTodos();
+  renderPacks();
+  renderShops();
+  renderExpenseDashboard();
+  renderExpenseList();
+}
+
+/* 頁面載入時檢查是否已登入過（同一個瀏覽器分頁內） */
+(async ()=>{
+  const loggedIn = await checkLogin();
+  if(loggedIn) await initApp();
+})();
+
 </script>
 </body>
 </html>
