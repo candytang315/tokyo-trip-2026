@@ -1079,26 +1079,64 @@ function bindShopTextEdit(){
   });
 }
 
+function imageToBase64(file){
+  return new Promise((resolve, reject)=>{
+    const reader = new FileReader();
+    reader.onload = ()=> resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
 function openEditShopModal(idx){
   const t = state.shops[idx];
+  let currentPhoto = t.photo || '';
   openModal(`
     <h2 style="margin:6px 0 14px; font-size:17px;">編輯購買項目</h2>
-    ${t.photo ? `<img src="${t.photo}" id="shopPhotoPreview" style="width:100%; height:280px; object-fit:contain; border-radius:14px; margin-bottom:10px; background:#F2EFE3; cursor:zoom-in;" onerror="this.style.display='none'">` : ''}
+    ${currentPhoto ? `<img src="${currentPhoto}" id="shopPhotoPreview" style="width:100%; max-height:280px; object-fit:contain; border-radius:14px; margin-bottom:10px; background:#F2EFE3; cursor:zoom-in;" onerror="this.style.display='none'">` : ''}
+    <div id="shopPhotoPlaceholder" style="${currentPhoto?'display:none':'display:flex'}; align-items:center; justify-content:center; background:#F2EFE3; border-radius:14px; height:120px; margin-bottom:10px; cursor:pointer; color:var(--ink-soft); flex-direction:column; gap:6px; font-size:12px;" onclick="document.getElementById('shopPhotoInput').click()">
+      <i class="fa-solid fa-camera" style="font-size:24px; opacity:.5;"></i>
+      點此選取照片
+    </div>
+    <input type="file" id="shopPhotoInput" accept="image/*" style="display:none;">
+    <button class="btn-primary" id="changePhotoBtn" style="margin-bottom:10px; background:var(--blue);">
+      <i class="fa-solid fa-camera"></i> ${currentPhoto ? '更換照片' : '選取照片'}
+    </button>
     <label>內容（可換行）</label>
     <textarea id="editShopText" rows="4" style="white-space:pre-wrap;">${t.text}</textarea>
-    <label>商品照片網址（選填）</label>
-    <input type="text" id="editShopPhoto" value="${t.photo||''}" placeholder="貼上圖片網址 https://...">
     <label>備註（選填，例如價格或店家）</label>
     <input type="text" id="editShopDue" value="${t.due||''}">
     <button class="btn-primary" id="editShopSubmit">儲存</button>
     <button class="btn-primary" id="editShopDelete" style="background:#D9A0A0; margin-top:8px;">刪除這個項目</button>
   `);
+
+  document.getElementById('changePhotoBtn').onclick = ()=> document.getElementById('shopPhotoInput').click();
+  document.getElementById('shopPhotoInput').onchange = async (e)=>{
+    const file = e.target.files[0];
+    if(!file) return;
+    const b64 = await imageToBase64(file);
+    currentPhoto = b64;
+    const preview = document.getElementById('shopPhotoPreview');
+    const placeholder = document.getElementById('shopPhotoPlaceholder');
+    if(preview){ preview.src = b64; preview.style.display = 'block'; }
+    else {
+      const img = document.createElement('img');
+      img.id = 'shopPhotoPreview';
+      img.src = b64;
+      img.style.cssText = 'width:100%; max-height:280px; object-fit:contain; border-radius:14px; margin-bottom:10px; background:#F2EFE3; cursor:zoom-in;';
+      img.onclick = ()=> showFullscreenPhoto(b64);
+      placeholder.before(img);
+    }
+    if(placeholder) placeholder.style.display = 'none';
+    document.getElementById('changePhotoBtn').innerHTML = '<i class="fa-solid fa-camera"></i> 更換照片';
+  };
+
   document.getElementById('editShopSubmit').onclick = ()=>{
     const text = document.getElementById('editShopText').value.trim();
     if(!text) return;
     state.shops[idx].text = text;
     state.shops[idx].due = document.getElementById('editShopDue').value.trim();
-    state.shops[idx].photo = document.getElementById('editShopPhoto').value.trim();
+    state.shops[idx].photo = currentPhoto;
     saveState();
     renderShops();
     closeModal();
@@ -1111,7 +1149,7 @@ function openEditShopModal(idx){
   };
   const photoPreview = document.getElementById('shopPhotoPreview');
   if(photoPreview){
-    photoPreview.onclick = ()=> showFullscreenPhoto(t.photo);
+    photoPreview.onclick = ()=> showFullscreenPhoto(currentPhoto);
   }
 }
 
@@ -1292,23 +1330,40 @@ document.getElementById('addFab').onclick = ()=>{
 };
 
 function openNewShopModal(){
+  let newPhoto = '';
   openModal(`
     <h2 style="margin:6px 0 14px; font-size:17px;">新增購買項目</h2>
+    <div id="newShopPhotoPlaceholder" style="display:flex; align-items:center; justify-content:center; background:#F2EFE3; border-radius:14px; height:120px; margin-bottom:10px; cursor:pointer; color:var(--ink-soft); flex-direction:column; gap:6px; font-size:12px;" onclick="document.getElementById('newShopPhotoInput').click()">
+      <i class="fa-solid fa-camera" style="font-size:24px; opacity:.5;"></i>
+      點此選取照片（選填）
+    </div>
+    <input type="file" id="newShopPhotoInput" accept="image/*" style="display:none;">
     <label>內容（可換行）</label>
     <textarea id="newShopText" rows="3" placeholder="輸入商品名稱"></textarea>
-    <label>商品照片網址（選填）</label>
-    <input type="text" id="newShopPhoto" placeholder="貼上圖片網址 https://...">
     <label>備註（選填，例如價格或店家）</label>
     <input type="text" id="newShopDue" placeholder="例如：藥妝店/¥1,500">
     <button class="btn-primary" id="newShopSubmit">新增</button>
   `);
+
+  document.getElementById('newShopPhotoInput').onchange = async (e)=>{
+    const file = e.target.files[0];
+    if(!file) return;
+    const b64 = await imageToBase64(file);
+    newPhoto = b64;
+    const placeholder = document.getElementById('newShopPhotoPlaceholder');
+    const img = document.createElement('img');
+    img.src = b64;
+    img.style.cssText = 'width:100%; max-height:200px; object-fit:contain; border-radius:14px; margin-bottom:10px; background:#F2EFE3;';
+    placeholder.replaceWith(img);
+  };
+
   document.getElementById('newShopSubmit').onclick = ()=>{
     const text = document.getElementById('newShopText').value.trim();
     if(!text) return;
     state.shops.unshift({
       text,
       due: document.getElementById('newShopDue').value.trim(),
-      photo: document.getElementById('newShopPhoto').value.trim(),
+      photo: newPhoto,
       done:false
     });
     saveState();
