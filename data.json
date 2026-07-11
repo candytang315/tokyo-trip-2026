@@ -366,17 +366,38 @@
         "note": ""
       },
       {
-        "time": "12:45",
+        "time": "10:05",
         "cat": "transport",
-        "title": "成田T2 抵達",
-        "sub": "辦理登機手續",
+        "title": "機場接送出發",
+        "sub": "包車直達成田T2，約90分鐘",
         "note": ""
       },
       {
-        "time": "13:00",
+        "time": "12:00",
+        "cat": "transport",
+        "title": "成田T2 抵達",
+        "sub": "辦理登機手續、行李托運",
+        "note": ""
+      },
+      {
+        "time": "12:15",
         "cat": "food",
         "title": "午餐",
-        "sub": "成田機場內",
+        "sub": "成田T2 2F 餐廳",
+        "note": "おぼんdeごはん 或 そじ坊（蕎麥麵）推薦"
+      },
+      {
+        "time": "14:00",
+        "cat": "spot",
+        "title": "過安檢＋逛免稅店",
+        "sub": "最後購物機會",
+        "note": ""
+      },
+      {
+        "time": "16:00",
+        "cat": "transport",
+        "title": "前往登機門",
+        "sub": "",
         "note": ""
       },
       {
@@ -391,13 +412,6 @@
         "cat": "transport",
         "title": "桃園抵達",
         "sub": "固定車接機",
-        "note": ""
-      },
-      {
-        "time": "10:00",
-        "cat": "transport",
-        "title": "機場接送",
-        "sub": "包車前往成田機場",
         "note": ""
       }
     ]
