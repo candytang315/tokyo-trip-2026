@@ -1,44 +1,44 @@
 {
   "todos": [
     {
-      "text": "teamLab Borderless 門票購買",
-      "due": "盡快",
+      "text": "人形町今半銀座店訂位（8/8午餐11:30）\n電話：03-3571-5333\n或TableCheck線上訂位",
+      "due": "最緊急",
       "done": false
     },
     {
-      "text": "玩具美術館寶寶廣場時段票",
-      "due": "7/1",
-      "done": false
-    },
-    {
-      "text": "千葉羅德棒球票購買",
-      "due": "盡快",
-      "done": true
-    },
-    {
-      "text": "Skyliner 票購買",
-      "due": "盡快",
-      "done": false
-    },
-    {
-      "text": "KOKO Hotel 確認信（延遲退房+嬰兒同行）",
-      "due": "7/28-7/30",
-      "done": true
-    },
-    {
-      "text": "淺草今半 或 替代晚餐方案確認",
-      "due": "盡快",
-      "done": false
-    },
-    {
-      "text": "ChargeSPOT 月租方案訂閱",
+      "text": "先生 Suica 手機綁定＋儲值¥3,000-5,000",
       "due": "出發前",
       "done": false
     },
     {
-      "text": "Suica 手機綁定 + 儲值",
+      "text": "機場接送確認（8/9包車直達成田）",
       "due": "出發前",
       "done": false
+    },
+    {
+      "text": "日幣換匯",
+      "due": "出發前",
+      "done": false
+    },
+    {
+      "text": "旅平險",
+      "due": "下週三業務來處理",
+      "done": false
+    },
+    {
+      "text": "teamLab Borderless 門票",
+      "due": "",
+      "done": true
+    },
+    {
+      "text": "千葉羅德棒球票（8/5）",
+      "due": "",
+      "done": true
+    },
+    {
+      "text": "鶯谷園代訂（8/7 16:30）",
+      "due": "",
+      "done": true
     }
   ],
   "packs": [
@@ -310,37 +310,58 @@
       {
         "time": "05:00",
         "cat": "food",
-        "title": "前往築地",
+        "title": "爸爸獨自前往築地",
         "sub": "場外市場早餐",
-        "note": "希望小孩起的來"
+        "note": ""
+      },
+      {
+        "time": "09:00",
+        "cat": "transport",
+        "title": "全家出發會合",
+        "sub": "",
+        "note": ""
       },
       {
         "time": "09:25",
         "cat": "spot",
-        "title": "東京鐵塔",
-        "sub": "外觀打卡拍照",
+        "title": "東京鐵塔外觀打卡",
+        "sub": "快速打卡拍照，不進館",
         "note": ""
       },
       {
-        "time": "10:00",
-        "cat": "spot",
-        "title": "麻布十番商店街",
-        "sub": "たい焼き、たぬき煎餅",
+        "time": "09:45",
+        "cat": "transport",
+        "title": "計程車→人形町今半 銀座店",
+        "sub": "約15分鐘",
         "note": ""
       },
       {
-        "time": "13:00",
+        "time": "11:30",
+        "cat": "food",
+        "title": "人形町今半 銀座店",
+        "sub": "壽喜燒午餐，週六11:30–20:30營業",
+        "note": "需提前訂位！電話：03-3571-5333"
+      },
+      {
+        "time": "13:30",
+        "cat": "transport",
+        "title": "搭車→麻布台之丘",
+        "sub": "約15分鐘",
+        "note": ""
+      },
+      {
+        "time": "14:30",
         "cat": "spot",
-        "title": "Comme'N KIDS",
-        "sub": "麻布台之丘，小學生限定麵包體驗",
+        "title": "Comme'N KIDS 麵包體驗",
+        "sub": "麻布台之丘，小學生限定自己結帳",
         "note": ""
       },
       {
         "time": "15:00",
         "cat": "spot",
         "title": "teamLab Borderless",
-        "sub": "麻布台之丘，不需脫鞋",
-        "note": "門票已買\n15:00-15:30進場"
+        "sub": "15:00–15:30入場，含茶票✅",
+        "note": "門票已購✅"
       },
       {
         "time": "17:30",
@@ -352,8 +373,8 @@
       {
         "time": "晚餐",
         "cat": "food",
-        "title": "輕鬆吃",
-        "sub": "山加商店海鮮居酒屋 或 麻布台之丘內",
+        "title": "淺草附近輕鬆吃",
+        "sub": "山加商店或飯店附近",
         "note": ""
       }
     ],
