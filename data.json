@@ -66,6 +66,11 @@
       "text": "常備藥品",
       "due": "",
       "done": false
+    },
+    {
+      "text": "兒童防曬乳液",
+      "due": "",
+      "done": true
     }
   ],
   "shops": [
